@@ -1,0 +1,2071 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta property="og:title" content="Matteo Palermo / Sk0rp">
+<meta property="og:url" content="https://sk0rp.dev/">
+<link rel="canonical" href="https://sk0rp.dev/">
+<meta property="og:description" content="Matteo Palermo, also known onchain as Sk0rp.eth.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23151515'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' text-anchor='middle' fill='%23C9574B'%3E0%3C/text%3E%3C/svg%3E">
+<title>Sk0rp</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Matteo Palermo, also known onchain as Sk0rp.eth.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@500&display=swap">
+<style>
+/* Layout: Kopfzeile mit Schalter, zentrierter Namenszug, darunter Inhalt links und ASCII-Portrait rechts.
+   Zwei Welten: "matteo" hell mit dem Grün aus dem Foto, "sk0rp" dunkel mit Rot und Dunkellila.
+   Die Farben in JS (PAL) müssen zu diesen Tokens passen. */
+@property --bg { syntax: '<color>'; inherits: true; initial-value: #ECEDEA; }
+@property --fg { syntax: '<color>'; inherits: true; initial-value: #141615; }
+@property --muted { syntax: '<color>'; inherits: true; initial-value: #5F6663; }
+@property --line { syntax: '<color>'; inherits: true; initial-value: rgba(20, 22, 21, .15); }
+@property --grid { syntax: '<color>'; inherits: true; initial-value: rgba(20, 22, 21, .05); }
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #3E8C73; }
+@property --violet { syntax: '<color>'; inherits: true; initial-value: #6A5A9C; }
+@property --mark { syntax: '<color>'; inherits: true; initial-value: rgba(62, 140, 115, .16); }
+@property --glass { syntax: '<color>'; inherits: true; initial-value: rgba(236, 237, 234, .74); }
+@property --card { syntax: '<color>'; inherits: true; initial-value: rgba(255, 255, 255, .55); }
+@property --knob { syntax: '<color>'; inherits: true; initial-value: #141615; }
+
+:root {
+  --bg: #ECEDEA;
+  --fg: #141615;
+  --muted: #5F6663;
+  --line: rgba(20, 22, 21, .15);
+  --grid: rgba(20, 22, 21, .05);
+  --accent: #3E8C73;        /* Grün der Kontur im Foto */
+  --violet: #6A5A9C;
+  --mark: rgba(62, 140, 115, .16);
+  --head: #2B6B58;          /* Türkis, dunkel genug für kleinen Text */
+  --glass: rgba(236, 237, 234, .74);
+  --card: rgba(255, 255, 255, .55);
+  --knob: #141615;
+  --haze: 0;
+  --f-sans: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --f-mono: "Geist Mono", ui-monospace, Menlo, Consolas, monospace;
+  --ease: cubic-bezier(.7, 0, .2, 1);
+  color-scheme: light;
+  transition: --bg .7s ease, --fg .7s ease, --muted .7s ease, --line .7s ease, --grid .7s ease, --accent .7s ease,
+              --violet .7s ease, --mark .7s ease, --glass .7s ease, --card .7s ease, --knob .5s ease;
+}
+:root[data-mode="sk0rp"] {
+  --bg: #100E12;
+  --fg: #E9E6EA;
+  --muted: #958F99;
+  --line: rgba(233, 230, 234, .15);
+  --grid: rgba(233, 230, 234, .045);
+  --accent: #D25A4D;        /* Rot der Flammen */
+  --violet: #7B4FC4;        /* Dunkellila */
+  --mark: rgba(123, 79, 196, .26);
+  --head: #E4887D;
+  --glass: rgba(16, 14, 18, .72);
+  --card: rgba(38, 26, 52, .42);
+  --knob: #D25A4D;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--f-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+
+/* Hintergrund: Lila-Dunst (nur Sk0rp), Raster, Canvas */
+.haze { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .9s ease;
+  background:
+    radial-gradient(60vmax 50vmax at 8% 0%, rgba(98, 52, 168, .30), transparent 70%),
+    radial-gradient(50vmax 40vmax at 100% 100%, rgba(150, 44, 52, .16), transparent 70%); }
+[data-mode="sk0rp"] .haze { opacity: 1; }
+.lake-grid, #lake { position: fixed; inset: 0; pointer-events: none; }
+.lake-grid {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 8px 10px;
+}
+#lake { width: 100%; height: 100%; }
+
+.page { position: relative; z-index: 1; max-width: 76rem; margin-inline: auto; }
+
+/* Kopfzeile */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 1rem;
+  padding-block: 14px 22px;
+  isolation: isolate;
+}
+header.top::before { content: ""; position: absolute; inset: 0 calc(50% - 50vw); z-index: -1; background: linear-gradient(var(--bg) 45%, transparent); pointer-events: none; }
+.where { color: var(--muted); font-size: .9375rem; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lang { justify-self: end; display: flex; gap: .15rem; }
+.lang button { font: inherit; font-size: .9375rem; color: var(--muted); background: none; border: 0; padding: .2rem .35rem; cursor: pointer; border-radius: 4px; }
+.lang button[aria-pressed="true"] { color: var(--fg); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 5px; text-decoration-thickness: 2px; }
+.lang button:hover { color: var(--fg); }
+
+.switch {
+  display: inline-flex; align-items: center; gap: .55rem; padding: .3rem .85rem;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--glass);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: 0 8px 28px -16px rgba(0, 0, 0, .35);
+  transition: box-shadow .3s ease, border-color .3s ease;
+}
+.switch:hover { border-color: var(--accent); box-shadow: 0 10px 34px -14px var(--accent); }
+.sw-name { font-size: .9375rem; color: var(--muted); cursor: pointer; user-select: none; transition: color .35s ease; border: 0; background: none; padding: 0; font-family: inherit; }
+.sw-name.on { color: var(--fg); }
+#sw { display: block; width: 64px; height: 32px; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 999px; }
+#sw svg { display: block; overflow: visible; }
+.sw-track { fill: var(--line); stroke: var(--line); stroke-width: 1; }
+.sw-goo { fill: var(--knob); }
+
+/* Namenszug */
+.hero { text-align: center; padding-block: clamp(1.5rem, 7vh, 4.5rem) clamp(1rem, 4vh, 2.5rem); }
+h1.name {
+  display: flex; justify-content: center; align-items: center;
+  font-weight: 300; font-size: clamp(2.75rem, 9.5vw, 8.5rem); line-height: 1; letter-spacing: -0.06em;
+  margin: 0 0 1.75rem; white-space: nowrap; min-height: 1.1em;
+}
+h1.name span { display: inline-block; transition: font-size .85s var(--ease), color .6s ease, opacity .6s ease, margin .85s var(--ease), letter-spacing .85s var(--ease); }
+.n-first { margin-right: .24em; }
+.n-mid { font-size: 0; opacity: 0; }
+[data-mode="sk0rp"] .n-first, [data-mode="sk0rp"] .n-last { font-size: max(.15em, .8rem); color: var(--muted); letter-spacing: 0; opacity: .7; }
+[data-mode="sk0rp"] .n-first { margin-right: .9rem; }
+[data-mode="sk0rp"] .n-last { margin-left: .9rem; }
+[data-mode="sk0rp"] .n-mid { font-size: 1.32em; opacity: 1; letter-spacing: -0.065em; }
+
+.sub { margin: 0 auto 1.5rem; max-width: 36rem; font-size: 1.1875rem; line-height: 1.5; text-wrap: balance; }
+.quote { margin: 0 auto 1.5rem; max-width: 38rem; }
+.quote p { margin: 0; font-size: 1.1875rem; line-height: 1.5; text-wrap: balance; }
+.quote figcaption { margin-top: .5rem; color: var(--muted); font-size: .9375rem; }
+.handles { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; margin: 0; padding: 0; list-style: none; }
+
+/* Link-Pillen mit Icon */
+.pill {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .9rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--card); color: var(--fg); text-decoration: none; font-size: .9375rem;
+  transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease, background .25s ease;
+}
+button.pill { font-family: inherit; font-weight: inherit; line-height: inherit; letter-spacing: inherit; cursor: pointer; }
+.pill.ok { border-color: #3FBF7F; }
+.pill:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 24px -14px var(--accent); color: var(--fg); }
+.ico { display: inline-block; visibility: hidden; width: 1em; height: 1em; flex: none; background: currentColor; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; transition: transform .25s ease; }
+.ico.ok { visibility: visible; }
+.pill .ico:not(.ok) { display: none; }
+.at { display: inline-block; font-family: var(--f-mono); font-size: 1.05rem; text-align: center; transition: transform .25s ease; }
+.pill:hover .ico, .crow:hover .ico, .crow:hover .at { transform: scale(1.15) rotate(-6deg); }
+
+/* Raster unter dem Namenszug */
+.layout { display: grid; grid-template-columns: minmax(0, 40rem) minmax(0, 1fr); gap: 2rem 4.5rem; align-items: start; }
+.col { padding-block: 2rem 5rem; padding-left: clamp(0rem, 3vw, 3rem); }
+.portrait-col { position: sticky; top: 92px; padding-top: 1rem; }
+#portrait { display: block; width: 100%; max-width: 34rem; height: auto; aspect-ratio: 546 / 657; touch-action: pan-y; }
+
+.side { transition: opacity .3s ease, filter .3s ease, transform .3s ease; }
+.side.fade { opacity: 0; filter: blur(6px); transform: translateY(6px); }
+.side > section + section { margin-top: 6rem; }
+
+h2 { font-size: 1rem; font-weight: 500; color: var(--head); margin: 0 0 1.5rem; letter-spacing: .01em; transition: color .7s ease; }
+.plain { margin: 0; max-width: 36rem; font-size: 1.125rem; }
+.plain p { margin: 0 0 1rem; }
+.plain p:last-child { margin-bottom: 0; }
+.plain .lede { font-size: clamp(1.4rem, 2.6vw, 1.75rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 1.25rem; }
+
+.rows { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1.1rem 2rem; margin: 0; align-items: baseline; }
+.rows dt { font-weight: 500; }
+.rows dd { margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chips.one { flex-wrap: nowrap; gap: .4rem; }
+.chips.one .chip { font-size: clamp(.72rem, 2.9vw, .875rem); padding: .2em .65em; white-space: nowrap; }
+.chip { padding: .2rem .7rem; border: 1px solid var(--line); border-radius: 999px; font-size: .9375rem; cursor: default; transition: border-color .2s ease, background .2s ease; font-variant-numeric: tabular-nums; }
+.chip:hover { border-color: var(--accent); background: var(--mark); }
+.based { display: flex; align-items: center; gap: .55rem; }
+.lu-link { cursor: pointer; text-decoration: underline dotted; text-decoration-color: var(--line); text-underline-offset: 4px; transition: text-decoration-color .2s ease, color .2s ease; }
+.lu-link:hover, .lu-link:focus-visible { text-decoration-color: var(--accent); color: var(--accent); outline: none; }
+.flag { display: inline-grid; place-items: center; width: 1.35rem; height: 1.35rem; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 6px; transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
+.flag svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .18)); }
+.flag:hover { transform: rotate(-8deg) scale(1.18); }
+.flag:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.lupop .lu-card { position: relative; width: min(980px, 100%); max-height: calc(100vh - 32px); display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; background: #F3EEE2; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .7); animation: cp-in .55s cubic-bezier(.16, 1, .3, 1) both; }
+.lu-media { position: relative; display: block; padding: 0; border: 0; background: #F3EEE2; cursor: pointer; min-height: 0; }
+.lu-media img { display: block; width: 100%; max-height: calc(100vh - 140px); object-fit: contain; }
+.lu-media img.pop { animation: lu-pop .5s ease; }
+@keyframes lu-pop { from { opacity: .3; filter: blur(4px); } }
+.lu-media .cp-bars { left: 18px; right: 18px; bottom: 14px; }
+.lu-cap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem 1.2rem; color: #1E3A66; }
+.lu-cap b { font-weight: 500; font-size: 1.125rem; letter-spacing: -0.01em; }
+.lu-cap span { color: #5A6B85; font-size: .875rem; }
+.lu-cap .cp-close { margin: 0; color: #1E3A66; background: transparent; border-color: rgba(30, 58, 102, .3); }
+
+/* Laufbahn (Matteo) */
+.steps { list-style: none; margin: 0; padding: 0; position: relative; display: grid; gap: .35rem; }
+.steps::before { content: ""; position: absolute; left: calc(.9rem - .5px); top: 1.4rem; bottom: 1.4rem; width: 1px; background: var(--line); }
+.step { position: relative; display: grid; grid-template-columns: 1.8rem minmax(0, 1fr) auto; gap: 1rem; align-items: center; padding: .7rem .9rem .7rem 0; border-radius: 12px; cursor: default; transition: background .25s ease, opacity .3s ease; }
+.step .badge { position: relative; z-index: 1; display: grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); color: var(--muted); transition: border-color .25s ease, color .25s ease, transform .3s cubic-bezier(.16, 1, .3, 1); }
+.step .badge .ico { width: .95rem; height: .95rem; }
+.step:hover { background: var(--mark); }
+.step:hover .badge { transform: scale(1.1); }
+.step.now .badge { border-color: var(--accent); color: var(--fg); }
+.step .role { font-weight: 500; min-width: 0; }
+.step .org { display: inline-block; color: var(--muted); font-weight: 400; font-size: .9375rem; text-decoration-color: transparent; }
+.step .role > span { display: block; }
+.step .org:hover { color: var(--accent); text-decoration-color: currentColor; }
+.step .tag { color: var(--muted); font-size: .9375rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.step.now .role { font-size: 1.25rem; letter-spacing: -0.01em; }
+.step.now .tag { color: var(--accent); }
+.step.past { opacity: .55; }
+.step.past .role { font-size: .9375rem; }
+.step.past:hover { opacity: 1; }
+
+/* Kontaktzeilen */
+.crows { display: grid; border-top: 1px solid var(--line); }
+.crow {
+  position: relative; display: grid; grid-template-columns: 1.5rem 7rem minmax(0, 1fr) auto; align-items: center; gap: 1rem;
+  padding: 1rem .75rem; border-bottom: 1px solid var(--line); color: var(--fg); text-decoration: none; overflow: hidden; isolation: isolate;
+}
+button.crow { width: 100%; font: inherit; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.crow::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--mark); transform: scaleX(0); transform-origin: left; transition: transform .45s var(--ease); }
+.crow:hover::after, .crow:focus-within::after { transform: scaleX(1); }
+.crow .ico { font-size: 1.1rem; }
+.crow .k { color: var(--muted); }
+.crow .v { font-size: 1.125rem; min-width: 0; overflow-wrap: anywhere; }
+.crow .go { color: var(--muted); font-size: .9375rem; transition: transform .3s var(--ease), color .3s ease; }
+.crow:hover .go { transform: translateX(4px); color: var(--fg); }
+.crow button.go { font: inherit; font-size: .9375rem; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+
+/* Vertrauen (Sk0rp) */
+.trust { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .5rem 2rem; align-items: end; margin-bottom: 1.25rem; }
+.score { font-size: clamp(3.5rem, 8vw, 5.5rem); font-weight: 300; letter-spacing: -0.05em; line-height: .9; font-variant-numeric: tabular-nums; }
+.level { font-size: 1.25rem; }
+.level span { display: block; color: var(--muted); font-size: .9375rem; }
+.gauge { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; margin: 0 0 .6rem; position: relative; }
+.seg { height: 14px; border-radius: 3px; background: var(--line); border: 0; padding: 0; cursor: pointer; transition: transform .2s ease, background .3s ease, box-shadow .2s ease; }
+.seg.done { background: var(--violet); }
+.seg.cur { background: linear-gradient(90deg, var(--violet), var(--accent)); box-shadow: 0 0 18px -2px var(--accent); }
+.seg:hover, .seg:focus-visible { transform: scaleY(1.6); }
+.trustbox { display: grid; grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); gap: 1.5rem 2.5rem; align-items: center; margin-bottom: .5rem; }
+.meter { position: relative; width: 100%; max-width: 18rem; aspect-ratio: 1; }
+#ring { display: block; width: 100%; height: 100%; overflow: visible; }
+#ring .rs-bg { fill: none; stroke-width: 14; stroke-linecap: butt; stroke-opacity: .28; cursor: pointer; transition: stroke-width .25s cubic-bezier(.16, 1, .3, 1), stroke-opacity .25s ease; }
+#ring .rs-bg.hl { stroke-opacity: .45; }
+#ring .rs-fill { fill: none; stroke-width: 14; stroke-linecap: butt; pointer-events: none; transition: stroke-width .25s cubic-bezier(.16, 1, .3, 1); }
+#ring .hl { stroke-width: 20; }
+#ring .rs-tick { stroke: var(--muted); stroke-width: 1; opacity: .5; }
+#ring .rs-tick.big { opacity: .9; stroke-width: 1.5; }
+#ring .rs-inner { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 1 5; }
+#ring .rs-lab { fill: var(--muted); font-size: 10px; font-family: var(--f-mono); }
+#ring .rs-dot { fill: #127F31; stroke: var(--bg); stroke-width: 3; transform-box: fill-box; transform-origin: center; animation: rs-pulse 2.4s ease-in-out infinite; }
+#ring .rs-halo { fill: #127F31; opacity: .25; transform-box: fill-box; transform-origin: center; animation: rs-halo 2.4s ease-out infinite; }
+@keyframes rs-pulse { 50% { transform: scale(1.18); } }
+@keyframes rs-halo { from { transform: scale(.6); opacity: .45; } to { transform: scale(2.4); opacity: 0; } }
+.meter-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+.meter-c .score { font-size: clamp(2.8rem, 6vw, 3.6rem); }
+.meter-lvl { color: var(--muted); transition: color .2s ease; font-size: .875rem; margin-top: .35rem; font-family: var(--f-mono); letter-spacing: .02em; }
+.ms-k { margin: 0 0 .25rem; color: var(--muted); font-size: .9375rem; }
+.ms-v { margin: 0 0 1.25rem; display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap; }
+.ms-v b { font-size: 1.75rem; font-weight: 300; letter-spacing: -0.03em; }
+.ms-v span { color: var(--muted); font-size: .9375rem; }
+.ms-rows { display: grid; gap: .5rem; margin-bottom: 1rem; }
+.ms-row { display: flex; align-items: baseline; gap: .6rem; padding: .55rem 0; border-top: 1px solid var(--line); font-size: .9375rem; color: var(--muted); }
+.ms-n { min-width: 3.2rem; color: var(--fg); font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+.ms-n.up { color: #3FBF7F; }
+.ms-n.down { color: var(--accent); }
+.gauge-info { min-height: 1.6em; color: var(--muted); font-size: .9375rem; margin: 0 0 1rem; font-variant-numeric: tabular-nums; }
+.gauge-info b { color: var(--fg); font-weight: 500; }
+
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 2rem 0 1rem; }
+.stat { padding: 1rem 1.1rem 1.1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--card); transition: border-color .25s ease, box-shadow .25s ease; transform-style: preserve-3d; will-change: transform; }
+.stat:hover { border-color: var(--violet); box-shadow: 0 18px 40px -24px var(--violet); }
+.stat .num { font-size: 2rem; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat .lbl { color: var(--muted); font-size: .9375rem; line-height: 1.35; margin-top: .25rem; }
+.stat .bar { height: 4px; border-radius: 2px; background: var(--line); margin-top: .75rem; overflow: hidden; }
+.stat .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #2FAE6E, #4ED394); transition: width 1.2s var(--ease); }
+.stat .good { color: #3FBF7F; }
+.stat .num .whuf { width: .8em; height: .8em; border-radius: 50%; vertical-align: -.06em; margin-right: .3em; }
+.source { color: var(--muted); font-size: .875rem; margin: 0; }
+.source .dot { display: inline-block; width: .5em; height: .5em; border-radius: 50%; background: var(--muted); margin-right: .4em; vertical-align: .08em; }
+.source.live .dot { background: #3FBF7F; box-shadow: 0 0 8px #3FBF7F; }
+
+/* Reviews als Kartenstapel */
+.deck { position: relative; height: 17.5rem; margin-bottom: 1rem; touch-action: pan-y; user-select: none; }
+.rcard {
+  position: absolute; inset: 0; padding: 1.4rem 1.5rem; border-radius: 16px; border: 1px solid var(--line); background: var(--bg);
+  display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; cursor: grab;
+  box-shadow: 0 24px 50px -30px rgba(0, 0, 0, .6);
+  transition: transform .55s var(--ease), opacity .45s ease, border-color .25s ease;
+}
+.rcard::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--card); z-index: -1; }
+.rcard:hover { border-color: var(--violet); }
+.rcard.dragging { transition: none; cursor: grabbing; }
+.rcard .rtop { min-height: 0; }
+.rcard .rx { margin: .6rem 0 0; color: var(--muted); font-size: .9375rem; line-height: 1.55; }
+.rcard .more { color: var(--fg); white-space: nowrap; }
+.rcard .rt { display: block; color: var(--fg); text-decoration: none; font-size: clamp(1.2rem, 2.6vw, 1.45rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.25; margin: 0; text-wrap: balance; }
+.rcard .rt:hover { color: var(--fg); text-decoration: underline; text-decoration-color: var(--violet); }
+.rcard .who { display: flex; align-items: center; gap: .65rem; min-width: 0; }
+.rcard .who > span:last-child { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+.rcard .av { flex: none; width: 2.25rem; height: 2.25rem; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--violet); color: #fff; font-weight: 500; font-size: .9375rem; border: 1px solid var(--line); }
+.rcard .av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rcard .nm { color: var(--fg); text-decoration: none; font-weight: 500; }
+.rcard .nmrow { display: flex; align-items: baseline; gap: .45rem; }
+.rcard .sc { font-family: var(--f-mono); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.rcard .nm:hover { color: var(--accent); }
+.rcard .rd { color: var(--muted); font-size: .875rem; white-space: nowrap; }
+.rcard .ra { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; color: var(--muted); font-size: .875rem; }
+.rcard .ra a { color: var(--fg); }
+.rcard .pos { color: var(--accent); }
+.deck-nav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.navbtn { font: inherit; font-size: .9375rem; color: var(--fg); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: .35rem .9rem; cursor: pointer; transition: border-color .2s ease, transform .2s ease; }
+.navbtn:hover { border-color: var(--violet); transform: translateY(-1px); }
+.deck-count { color: var(--muted); font-size: .9375rem; font-variant-numeric: tabular-nums; margin-right: auto; }
+
+/* Onchain-Reise: Chart + Meilensteine */
+.chart-wrap { position: relative; margin: 0 0 1.25rem; }
+#chart { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+#chart .band { stroke: var(--line); stroke-dasharray: 2 4; }
+#chart .band-l { font-size: 10px; font-family: var(--f-sans); }
+#chart .tier { opacity: .05; }
+#chart .axis-l { fill: var(--muted); font-size: 10px; font-family: var(--f-sans); }
+#chart .ln { fill: none; stroke: url(#tierline); stroke-width: 2.25; stroke-linejoin: round; }
+#chart .ms { fill: var(--bg); stroke: var(--violet); stroke-width: 2; transition: r .2s ease, fill .2s ease; }
+#chart .ms.on { fill: var(--violet); r: 6; }
+#chart .xh { stroke: var(--muted); stroke-width: 1; }
+#chart .xd { fill: var(--fg); stroke: var(--bg); stroke-width: 2; }
+.tip {
+  position: absolute; pointer-events: none; transform: translate(-50%, -120%); padding: .3rem .6rem; border-radius: 8px; white-space: nowrap;
+  background: var(--fg); color: var(--bg); font-size: .8125rem; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity .15s ease;
+}
+.tip.on { opacity: 1; }
+.jwrap { position: relative; padding-left: 5.75rem; }
+.jsvg { position: absolute; left: 0; top: 0; width: 5.5rem; height: 100%; overflow: visible; pointer-events: none; }
+.jsvg .sp { stroke: var(--line); stroke-width: 2; }
+.jsvg .spf { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
+.jsvg .pr { fill: none; stroke: var(--muted); stroke-width: 1.25; opacity: .35; stroke-linejoin: round; }
+.jsvg .prf { fill: none; stroke: #F7931A; stroke-width: 1.5; stroke-linejoin: round; }
+.jsvg .pa { fill: #F7931A; opacity: .08; }
+.jsvg .jd { fill: var(--bg); stroke: var(--line); stroke-width: 2; transition: fill .3s ease, stroke .3s ease, r .3s ease; }
+.jsvg .jd.on { fill: var(--accent); stroke: var(--accent); }
+.jsvg .jc { fill: #F7931A; opacity: 0; transition: opacity .3s ease; }
+.jsvg .jc.on { opacity: .9; }
+.jsvg .jl { stroke: #F7931A; stroke-dasharray: 1 3; opacity: 0; transition: opacity .3s ease; }
+.jsvg .jl.on { opacity: .45; }
+.journey { list-style: none; margin: 0; padding: 0; display: grid; gap: .25rem; }
+.journey li { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 1rem; padding: .6rem .75rem; border-radius: 10px; cursor: default; transition: background .2s ease, opacity .4s ease; }
+.jwrap.anim .journey li { opacity: .38; }
+.jwrap.anim .journey li.seen { opacity: 1; }
+.journey .jp { display: block; margin-top: .2rem; font-family: var(--f-mono); font-size: .75rem; color: #C98A3A; }
+.journey .tk { display: inline-flex; align-items: center; gap: .3em; color: var(--fg); text-decoration: none; white-space: nowrap; border-bottom: 1px solid var(--line); transition: border-color .2s ease; }
+.journey .tk:hover { border-color: var(--accent); }
+.journey .tk img { width: 1.05em; height: 1.05em; border-radius: 50%; vertical-align: -.15em; }
+.journey .tk img.sq { border-radius: 0; object-fit: contain; }
+.journey .tkm { width: 1.05em; height: 1.05em; display: inline-block; background: var(--fg); -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
+.jnote { display: flex; align-items: center; gap: .5rem; margin: 1rem 0 0; color: var(--muted); font-size: .8125rem; }
+.jkey { width: 1.25rem; height: 2px; background: #F7931A; display: inline-block; border-radius: 2px; }
+.journey li:hover, .journey li.on { background: var(--mark); }
+.journey time { color: var(--muted); font-variant-numeric: tabular-nums; font-size: .9375rem; }
+.journey b { font-weight: 500; display: block; }
+.journey span { color: var(--muted); }
+.journey b { color: var(--fg); }
+.journey li.now time { color: var(--accent); }
+.subhead { margin: 2rem 0 .75rem; color: var(--muted); font-size: .9375rem; }
+
+a { color: var(--fg); text-decoration-line: underline; text-decoration-color: var(--line); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+a:hover { color: var(--accent); text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.ph { background: var(--mark); border-radius: 3px; padding: 0 .3em; }
+
+.textbtn { font: inherit; font-size: .9375rem; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.textbtn:hover { color: var(--fg); }
+
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 1rem 2rem; padding-block: 2rem 2.5rem; color: var(--muted); font-size: .9375rem; border-top: 1px solid var(--line); }
+footer p { margin: 0; max-width: 40rem; }
+
+[hidden] { display: none !important; }
+.cat-hover, .cat-hover * { cursor: pointer !important; }
+.catpop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.cp-back { position: absolute; inset: 0; background: rgba(8, 6, 10, .55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: cp-fade .3s ease both; }
+.cp-card { position: relative; width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); border-radius: 22px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .7); animation: cp-in .55s cubic-bezier(.16, 1, .3, 1) both; }
+.cp-media { position: relative; display: grid; place-items: center; min-height: 380px; padding: 28px 24px 52px; border: 0; cursor: pointer; background: radial-gradient(120% 90% at 50% 35%, #55A88C, #2B6B58); overflow: hidden; }
+.cp-media img { display: block; max-width: 100%; max-height: 400px; object-fit: contain; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .25)); transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
+.cp-media:hover img { transform: rotate(-2deg) scale(1.02); }
+.cp-media img.pop { animation: cp-pop .45s cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes cp-pop { from { transform: scale(.82) rotate(4deg); opacity: .4; } }
+.cp-bars { position: absolute; left: 24px; right: 24px; bottom: 20px; display: flex; gap: 6px; }
+.cp-bars i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .38); transition: background .3s ease; }
+.cp-bars i.on { background: #FFFFFF; }
+.cp-media:focus-visible { outline: 2px solid #FFFFFF; outline-offset: -6px; }
+.cp-body { padding: 28px 28px 26px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.cp-kicker { margin: 0; color: var(--muted); font-size: .875rem; font-family: var(--f-mono); }
+.cp-body h3 { margin: 0; font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 300; letter-spacing: -0.04em; line-height: 1; }
+.cp-body p.cp-text { margin: 0; font-size: 1.0625rem; }
+.cp-facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .35rem 1.25rem; margin: 6px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: .9375rem; }
+.cp-facts dt { color: var(--muted); }
+.cp-facts dd { margin: 0; }
+.cp-close { align-self: flex-start; margin-top: auto; font: inherit; font-size: .9375rem; color: var(--fg); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: .5rem 1.1rem; cursor: pointer; transition: border-color .2s ease; }
+.cp-close:hover { border-color: var(--accent); }
+@keyframes cp-fade { from { opacity: 0; } }
+@keyframes cp-in { from { opacity: 0; transform: translateY(16px) scale(.97); } }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .portrait-col { position: static; order: -1; padding-top: 0; justify-self: center; width: 100%; max-width: 22rem; }
+  .col { padding-left: 0; padding-top: 1.5rem; }
+}
+@media (max-width: 600px) {
+  .where { font-size: .8125rem; }
+  .switch { gap: .4rem; padding: .25rem .6rem; }
+  .side > section + section { margin-top: 4.5rem; }
+  .rows { grid-template-columns: minmax(0, 1fr); gap: .3rem; }
+  .rows dd + dt { margin-top: 1rem; }
+  .stats { grid-template-columns: minmax(0, 1fr); }
+  .trust { grid-template-columns: minmax(0, 1fr); }
+  .trustbox { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .meter-side { width: 100%; }
+  .crow { grid-template-columns: 1.5rem minmax(0, 1fr) auto; }
+  .crow .k { display: none; }
+  .journey li { grid-template-columns: minmax(0, 1fr); gap: .1rem; }
+  .jwrap { padding-left: 3.75rem; }
+  .jsvg { width: 3.5rem; }
+  .deck { height: 21rem; }
+  .cp-card { grid-template-columns: minmax(0, 1fr); }
+  .cp-media { min-height: 0; }
+  .cp-media img { max-height: 38vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="haze" aria-hidden="true"></div>
+<div class="lake-grid" aria-hidden="true"></div>
+<canvas id="lake" aria-hidden="true"></canvas>
+
+<div class="page">
+  <header class="top" data-veil>
+    <div class="where">
+      <span class="side" data-side="matteo"><span class="lu-link" role="button" tabindex="0" data-t="where">Switzerland</span> <span id="clock"></span></span>
+      <span class="side" data-side="sk0rp" hidden>sk0rp.eth</span>
+    </div>
+    <div class="switch">
+      <button class="sw-name on" type="button" data-go="matteo" tabindex="-1" aria-hidden="true">Matteo</button>
+      <button id="sw" type="button" role="switch" aria-checked="false" aria-label="Switch between Matteo and Sk0rp" data-ta="sw_label">
+        <svg width="64" height="32" viewBox="0 0 64 32" aria-hidden="true">
+          <defs>
+            <filter id="goo" x="-30%" y="-60%" width="160%" height="220%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2.6" result="b"/>
+              <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"/>
+            </filter>
+          </defs>
+          <rect class="sw-track" x="1" y="3" width="62" height="26" rx="13"/>
+          <g class="sw-goo" filter="url(#goo)">
+            <circle id="k3" cx="16" cy="16" r="4.5"/>
+            <circle id="k2" cx="16" cy="16" r="7"/>
+            <circle id="k1" cx="16" cy="16" r="9.5"/>
+          </g>
+        </svg>
+      </button>
+      <button class="sw-name" type="button" data-go="sk0rp" tabindex="-1" aria-hidden="true">Sk0rp</button>
+    </div>
+    <div class="lang" role="group" aria-label="Language" data-ta="lang_label">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="de" aria-pressed="false">DE</button>
+    </div>
+  </header>
+
+  <section class="hero" data-veil>
+    <h1 class="name" id="name" aria-label="Matteo Palermo">
+      <span class="n-first" aria-hidden="true">Matteo</span><span class="n-mid" aria-hidden="true" id="n-mid">Sk0rp</span><span class="n-last" aria-hidden="true">Palermo</span>
+    </h1>
+    <div class="side" data-side="matteo">
+      <p class="sub" data-t="m_sub">Head of Account Management &amp; Project Manager</p>
+      <ul class="handles">
+        <li><a class="pill" data-fx href="https://www.linkedin.com/in/matteo-palermo-25542b1b9/" rel="noopener"><i class="ico" data-icon="linkedin"></i>LinkedIn</a></li>
+        <li><a class="pill" data-fx href="https://www.instagram.com/pvlermo/" rel="noopener"><i class="ico" data-icon="instagram"></i>Instagram</a></li>
+      </ul>
+    </div>
+    <div class="side" data-side="sk0rp" hidden>
+      <figure class="quote">
+        <p>“An early Ethos OG and passionate Web3 contributor, known for honest takes and calling out bad actors. A trusted voice who leads with conviction, integrity, and action.”</p>
+        <figcaption data-t="s_sum_cap">Profile summary on Ethos</figcaption>
+      </figure>
+      <ul class="handles">
+        <li><a class="pill" data-fx href="https://x.com/Sk0rpETH" rel="noopener"><i class="ico" data-icon="x"></i>@Sk0rpETH</a></li>
+        <li><a class="pill" data-fx href="https://t.me/sk0rpeth" rel="noopener"><i class="ico" data-icon="telegram"></i>Telegram</a></li>
+        <li><a class="pill" data-fx href="https://app.ethos.network/profile/x/Sk0rpETH" rel="noopener"><i class="ico" data-icon="ethos"></i>Ethos</a></li>
+        <li><button class="pill" type="button" data-fx id="copy-eth" title="0x12b6d12A6b5d23804c94ec1e40E0DF5e91BD0cc0" aria-label="Copy wallet address" data-ta="s_eth_label"><i class="ico" data-icon="ethereum"></i><span id="copy-eth-t">sk0rp.eth</span></button></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="layout">
+    <div class="col">
+
+      <!-- ===================== Matteo ===================== -->
+      <div class="side" data-side="matteo" data-veil>
+        <section>
+          <h2 data-t="m_about_h">About me</h2>
+          <dl class="rows">
+            <dt data-t="m_based_t">Based in</dt><dd class="based"><span class="lu-link" role="button" tabindex="0" data-t="m_based">Switzerland</span><button class="flag" id="ch-flag" type="button" aria-label="Show Lucerne" data-ta="lu_open" data-fx><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#DA291C"/><path d="M13.3 6.5h5.4v6.8h6.8v5.4h-6.8v6.8h-5.4v-6.8H6.5v-5.4h6.8z" fill="#fff"/></svg></button></dd>
+            <dt data-t="m_int_t">Interests</dt>
+            <dd><div class="chips one" data-fx>
+              <span class="chip" data-scramble data-t="i1">Crypto</span>
+              <span class="chip" data-scramble data-t="i2">Technology</span>
+              <span class="chip" data-scramble data-t="i3">Finance</span>
+              <span class="chip" data-scramble>Gaming</span>
+              <span class="chip" data-scramble data-t="i5">Travel</span>
+            </div></dd>
+          </dl>
+        </section>
+
+        <section>
+          <h2 data-t="m_do_h">What I do</h2>
+          <div class="plain" data-t="m_do"><p class="lede">I turn connections into opportunities and opportunities into lasting partnerships.</p><p>As Head of Account Management at Patoc, I work with leading brands and some of Switzerland's biggest shopping platforms to create collaborations that deliver real value.</p><p>From the first conversation to negotiating deals and launching campaigns, I bring the right people and ideas together. But for me, it doesn't stop when a deal is signed. It's about building relationships, finding new opportunities and growing together over the long term.</p></div>
+        </section>
+
+        <section>
+          <h2 data-t="m_work_h">Work</h2>
+          <ol class="steps">
+            <li class="step now" data-fx><span class="badge"><i class="ico" data-icon="patoc"></i></span><span class="role"><span>Head of Account Management</span><a class="org" href="https://www.patoc.ch/" rel="noopener">Patoc GmbH</a></span><span class="tag">2024–<span data-t="now">today</span></span></li>
+            <li class="step past" data-fx><span class="badge"><i class="ico" data-icon="kadena"></i></span><span class="role"><span>Social Media Manager</span><a class="org" href="https://x.com/kadena_io" rel="noopener">Kadena LLC</a></span><span class="tag">2022–2024</span></li>
+            <li class="step past" data-fx><span class="badge"><i class="ico" data-icon="patoc"></i></span><span class="role"><span>Account Manager</span><a class="org" href="https://www.patoc.ch/" rel="noopener">Patoc GmbH</a></span><span class="tag">2020–2022</span></li>
+          </ol>
+        </section>
+
+        <section id="contact">
+          <h2 data-t="contact_h">Contact</h2>
+          <div class="crows">
+            <a class="crow" data-fx href="mailto:sk0rp@pm.me">
+              <span class="at" aria-hidden="true">@</span><span class="k" data-t="c_mail">Email</span><span class="v">sk0rp@pm.me</span><span class="go" data-t="write">Write</span>
+            </a>
+            <a class="crow" data-fx href="https://www.linkedin.com/in/matteo-palermo-25542b1b9/" rel="noopener">
+              <i class="ico" data-icon="linkedin"></i><span class="k">LinkedIn</span><span class="v">Matteo Palermo</span><span class="go" data-t="open">Open</span>
+            </a>
+            <a class="crow" data-fx href="https://www.instagram.com/pvlermo/" rel="noopener">
+              <i class="ico" data-icon="instagram"></i><span class="k">Instagram</span><span class="v">@pvlermo</span><span class="go" data-t="open">Open</span>
+            </a>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===================== Sk0rp ===================== -->
+      <div class="side" data-side="sk0rp" data-veil hidden>
+        <section>
+          <h2 data-t="s_trust_h">Trust on Ethos</h2>
+          <div class="trustbox">
+            <div class="meter">
+              <svg id="ring" viewBox="0 0 300 300" role="img" aria-label="Ethos score 2283 of 2800"></svg>
+              <div class="meter-c">
+                <div class="score" id="score-num">2240</div>
+                <div class="meter-lvl" id="level-name">Distinguished</div>
+              </div>
+            </div>
+            <div class="meter-side">
+              <p class="ms-k" data-t="s_level_cap">Credibility level</p>
+              <p class="ms-v"><b id="lvl-big">Distinguished</b><span id="lvl-of">Level 8 of 10</span></p>
+              <div class="ms-rows">
+                <div class="ms-row"><span class="ms-n" id="delta">+204</span><span id="delta-l">in the last 30 days</span></div>
+                <div class="ms-row"><span class="ms-n" id="next-pts">160</span><span id="next-l">points to Revered</span></div>
+              </div>
+              <p class="gauge-info" id="gauge-info"></p>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat" data-tilt data-fx>
+              <div class="num" id="st-pos" data-count="166">166</div>
+              <div class="lbl" id="st-pos-l">positive reviews</div>
+              <div class="bar"><i id="st-pos-bar"></i></div>
+              <div class="lbl good" id="st-pos-pct">97.6% positive</div>
+            </div>
+            <div class="stat" data-tilt data-fx>
+              <div class="num"><img class="whuf" src="icons/whuf.png" alt="" aria-hidden="true"><span id="st-usd">$59k</span></div>
+              <div class="lbl" id="st-usd-l">vouched in WHUF</div>
+            </div>
+            <div class="stat" data-tilt data-fx>
+              <div class="num" id="st-vouchers" data-count="42">42</div>
+              <div class="lbl" id="st-vouchers-l">people vouch for me</div>
+              <div class="lbl" id="st-human">Verified human</div>
+            </div>
+          </div>
+          <p class="subhead" data-t="s_hist">Score history</p>
+          <div class="chart-wrap" id="chart-wrap">
+            <svg id="chart" viewBox="0 0 640 240" role="img" aria-label="Ethos score from January 2025 until today" data-ta="s_chart"></svg>
+            <div class="tip" id="tip"></div>
+          </div>
+          <p class="source" id="source"><span class="dot"></span><span id="source-t">Snapshot from 21 October 2026</span>. <a href="https://app.ethos.network/profile/x/Sk0rpETH/score" rel="noopener" data-t="s_breakdown">Score breakdown on Ethos</a></p>
+        </section>
+
+        <section>
+          <h2 data-t="s_say_h">What people say</h2>
+          <div class="deck" id="deck" aria-live="polite"></div>
+          <div class="deck-nav">
+            <span class="deck-count" id="deck-count"></span>
+            <button class="navbtn" type="button" id="prev" data-t="prev">Previous</button>
+            <button class="navbtn" type="button" id="next" data-t="next">Next</button>
+          </div>
+        </section>
+
+        <section>
+          <h2 data-t="s_journey_h">Crypto journey</h2>
+          <div class="jwrap" id="jwrap">
+          <svg class="jsvg" id="jsvg" aria-hidden="true"></svg>
+          <ol class="journey" id="journey">
+            <li data-fx><time data-d="2017-12" data-t="cj1d">Dec 2017</time><span data-t="cj1"><b>First coins</b> Bought my first $BTC, $ETH and $LTC</span></li>
+            <li data-fx><time data-d="2019-05" data-t="cj2d">May 2019</time><span data-t="cj2"><b>Going deeper</b> Got deeper into crypto and bought $MCO, today Crypto.com</span></li>
+            <li data-fx><time data-d="2021-01" data-t="cj4d">Early 2021</time><span data-t="cj4"><b>DeFi on BSC</b> Joined the DeFi wave on [bsc]</span></li>
+            <li data-fx><time data-d="2021-11" data-t="cj6d">Nov 2021</time><span data-t="cj6"><b>All in</b> Went heavy into $KDA, $CRO, $ETH, $BNB and many others</span></li>
+            <li data-fx><time data-d="2022-04" data-t="cj7d">Apr 2022</time><span data-t="cj7"><b>Kadena</b> Started working for [kadena]</span></li>
+            <li data-fx><time data-d="2023-11" data-t="cj8d">Late&nbsp;2023 – mid&nbsp;2024</time><span data-t="cj8"><b>Blast</b> Farmed $BLAST and met amazing people at Fantasy Top and New Blast City</span></li>
+            <li data-fx class="now"><time data-d="2025-03" data-t="cj9d">Mar&nbsp;2025 – today</time><span data-t="cj9"><b>Base and Ethos</b> Became a [base] and [ethos] maxi</span></li>
+          </ol>
+          </div>
+          <p class="jnote"><i class="jkey"></i><span data-t="jnote">Bitcoin price, monthly close, log scale</span></p>
+        </section>
+
+        <section>
+          <h2 data-t="contact_h">Contact</h2>
+          <div class="crows">
+            <a class="crow" data-fx href="https://x.com/Sk0rpETH" rel="noopener"><i class="ico" data-icon="x"></i><span class="k">X</span><span class="v">@Sk0rpETH</span><span class="go" data-t="open">Open</span></a>
+            <button class="crow" type="button" data-fx id="copy-dc"><i class="ico" data-icon="discord"></i><span class="k">Discord</span><span class="v">@Sk0rp</span><span class="go" id="copy-dc-t" data-t="copy">Copy</span></button>
+            <a class="crow" data-fx href="https://t.me/sk0rpeth" rel="noopener"><i class="ico" data-icon="telegram"></i><span class="k">Telegram</span><span class="v">@sk0rpeth</span><span class="go" data-t="open">Open</span></a>
+            <a class="crow" data-fx href="mailto:sk0rp@pm.me"><span class="at" aria-hidden="true">@</span><span class="k" data-t="c_mail">Email</span><span class="v">sk0rp@pm.me</span><span class="go" data-t="write">Write</span></a>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <aside class="portrait-col">
+      <canvas id="portrait" role="img" aria-label="Portrait of Matteo drawn in characters, with a green outline."></canvas>
+    </aside>
+  </div>
+
+  <footer data-veil>
+    <p>
+      <span class="side" data-side="sk0rp" hidden data-t="s_foot">Flip the switch at the top to meet Matteo, the person behind Sk0rp.</span>
+    </p>
+    <button class="textbtn" type="button" id="motion" aria-pressed="false">Pause motion</button>
+  </footer>
+</div>
+
+<div class="catpop lupop" id="lupop" hidden>
+  <div class="cp-back" data-close></div>
+  <div class="lu-card" role="dialog" aria-modal="true" aria-labelledby="lu-title">
+    <button class="lu-media" id="lu-media" type="button" aria-label="Show the other picture" data-ta="lu_next">
+      <img id="lu-img" src="" alt="Lucerne with the Chapel Bridge, Lake Lucerne and Mount Pilatus">
+      <span class="cp-bars" aria-hidden="true"><i class="on"></i><i></i></span>
+    </button>
+    <div class="lu-cap">
+      <div><b id="lu-title" data-t="lu_t">Lucerne</b><br><span data-t="lu_s">Chapel Bridge, Lake Lucerne and Mount Pilatus</span></div>
+      <button class="cp-close" type="button" data-close data-t="close">Close</button>
+    </div>
+  </div>
+</div>
+<div class="catpop" id="catpop" hidden>
+  <div class="cp-back" data-close></div>
+  <div class="cp-card" role="dialog" aria-modal="true" aria-labelledby="cp-name">
+    <button class="cp-media" id="cp-media" type="button" aria-label="Show the other photo">
+      <img id="cp-img" src="" alt="">
+      <span class="cp-bars" aria-hidden="true"><i class="on"></i><i></i></span>
+    </button>
+    <div class="cp-body">
+      <p class="cp-kicker" id="cp-kicker"></p>
+      <h3 id="cp-name"></h3>
+      <p class="cp-text" id="cp-text"></p>
+      <dl class="cp-facts" id="cp-facts"></dl>
+      <button class="cp-close" type="button" id="cp-close" data-close>Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="data-sk0rp">{"cols":78,"rows":73,"chars":"                                                                                                                        ./         .                                                        .      ////.       //                                                        ./     //|.       //|                                                      ./-/.    .|x|.    /--//.                                                    .////      /|x||   //x//                                                     ./x|/    /--/xx/|   |xx|    .                                                 ||x|    |/xxx///   .|x||    |      /-----.                                    ||x|    ||xx//    -/|x/  .///    ///-xxx-\\\\\\                               .  ||x\\\\. ./|x||   //X///. .//     //xxxxxxxx*\\\\.                             |  .|xx\\--/xxx||  ||xx//   |||    //xxx*****xxx*\\\\                          ./|  ||//xxxxxxx||  ||xx|.   |||   /|xxxxx*XXX***x*\\\\                        .//. ./x||xxxxxxx/.  ||xx\\\\  //x|  .|xxx***|##XXX*xx*\\.                       //|  |xx||xxxxxx|   ///xxx\\--/xx|  ||***x*//-\\#XXX*xx||                      .|x\\| |xxx||xxxx|\\..//xx/|xxxxxx//  |**xx*X//  \\#XXX*xx|.                      \\xx\\//xx//xxx|xx\\--xxx///xxxx//.   ||****X|    \\\\XX***||                      .\\\\x-x///xxx/#xxxxxx////xxx//.   / ||****||     \\\\XXxx*|.                      ||xxx||*xx|//xxxxxx|||xxxx|/ .//. |****X#|     .#X***x||                      ,|xxx|\\xxx||xxxxxxx||\\xxxx|\\./||  |X***X|.      |\\**x**|                    ///%\\*xx\\xxxxxxxxxxx//x||xx//%%%|\\\\ |X**XX#.      ||X**xx|                   .|X@@%%|xxxxxxxx/|x//-x//xx|%@@#//#\\x%X**XX#       .%X*xx*|                   ||\\\\%@%|xxxxxxxx||xxxxx//xx|%/-//%%%|##XXX#|        |**xxx|.                  |XX-------\\xxx//|xxxxxxxxxxxxx-/%%///%##X##|        |X*xx*|.                  ||*x+x\\--\\\\\\/---\\-----------------/XX###X##.        |**xx*|.                  ||**||;--\\|*/------------/------/+|**|%##%/         |X*x**|                   ||||x+;;;:\\x;:,:::;:;;;--,:::::;/x**|#%##/         .|*xx**|                   ||*||+;;::\\-,::;::+;/;:,,,,,,::/x||||#%/.          ||****X|                 /-||X|/+::,,,,,,,:|;;|:,,,,,,,,,:\\|||||%/ .          ||*xx*||                ||\\X|X||:;--\\\\::,,/|||;,,:,,:,:,/;;|X*x|#;/x\\         |*****|.                ||\\\\|||x---------;/|;|\\\\;/-/-------||**X#///|        ||**xx*|                 .#\\\\|XX#%@#----#---|+|\\--/##---\\%%\\//|*#///#|        |Xxxx*||                  |*||XX%%@oooo.+%%%|-+\\#%%/ooooo|@%#-|||//X#|       //****X|                  .|/%%|X#%%\\oooo#%%#|/||##%\\oo--/%##/***/%\\+\\|      ./**xx*|/                  .||%#|*\\##X#%####X#|,||*\\X\\%#--###//+x/X@%|||      /|****X/                    |\\%||\\x*\\--X###XX||,:+x\\*\\X#X*X-//+||#||#|/|     //**xx*//                    .|\\%|*\\\\\\xx/X/*/|||,|/+++\\\\\\Xx/+//;//|x%///     //*xxx*X/                      |X\\#\\xx\\////x/|*X|,||++:\\:\\\\\\\\;:///X%//|/.     /X*xxx*/                       |\\\\#\\-\\-///+////X|,|/x+;:;;|\\\\---/X#%-x/.     /|*xx**//                        \\\\%#%XX#\\\\;;;//||,||\\\\\\\\;|//#*//X/|#///     ./X*xx*//                          .\\|###%#\\x|/||||,||\\\\|+////%#@||/|/-/      ||*****/                            |#X#%@|-\\-|#-\\\\-//-//x//-\\@%@|*/%|        |X**x*/|                           //\\X|%#|++\\x\\\\%%-#%//+x/++|%@%/%%|        |#X****|                           .. |X||x|+x/+-\\\\--X//;;:;++\\|%%%#%|        |XX***X|                              |X|#x*+//-----------\\\\|;||%%##%|        |XX***||                              .||#*|/%/\\#x\\#\\/\\|*#X\\\\\\+|#%X#%.        |XX***||                               \\#%X||%||%||||||%|%|\\\\|||%#X#%.        |XX*x*X|                                \\#X|%%||@#%\\%%/@%@||@|||#|#|%.        |\\XX***\\                                |#X|@%%#%%%@@@@@@@\\%%||||XX%#.        .|XX***\\\\                                |||%@@@%\\\\@@%%@#@@%%|x||#%/#.         \\\\XX***\\\\                               |||@@@%#@%\\%%@@@@%%%||||#%X#.          \\XXX***\\\\.                             |||%@%%%@@###%%%%%%@||||#/|#\\          .\\#XX***X\\\\.                           |%|%@|@@%%%%%@%%X%@@|||%||||%\\\\.        \\\\#XXXXX**\\\\                        ./%#||||%@%%@@@@%%|\\%%||/%|/*X*\\%\\\\        .\\\\##XXX**\\\\                      /%@%%#||\\|X@|@@#%#%|:|%||%/*||||\\##\\\\\\        \\\\\\##XXXX|\\                   //%%%%%#|\\-||||%%|||\\|-/||%///||*xx|##%#\\\\\\       \\\\##XXXX\\\\               .//%%%%#%%%|*\\%#XxXXxX*X\\-//|%|/xxx*\\+|##%\\%#\\\\\\.      \\##XXX#\\            .//%%%%%%@%%%#\\\\------------///||||/xxx|x###########-\\.    \\###XX#          -//%%%%%%%%%%###%\\X%##%%%%#--##//%X//x*+/x/####X##X##-##-\\\\. |%##XX|       /--%#%%%%%%%@%%%##%#%\\@|\\@@@@@/X%//%/X|xxxx+||#########XX###XX--+%##XX#    ///###%%%%%%%%%%%%%####%\\#|x%#*%/++//##////+|xx/%####X###%XX###X###X\\%%###   //####%%%%%%%%%%%@%%@##%#%%-X@|*Xx*-/%/X///|+x//%##%####X##||##|#XXXXXX#%\\#  /#####%%%%%%%%%%%%%@@%%%###%%%@%%%%##%#///|*+/x/%##%#####X|#|||#||X#XXX#X##% /####%%#%%%%%%%%%%%@@%%@@%%####@%%####X/////|*/###%%%###X##X##XXX|#X##X##XXX%//#####%#%%%%%%%%%%%%%@@%%%%%###@#####X*//x-///%%##%####XXX#XX%|X##XX#X|#|#|XX/#####%##%%%%%%%%%%%%%@@@%%%%%%%@%####X----%%#%##%%####XXXX#X|##X##|#|X%X|#X/X%#%#%#%#%#%%%%%%%%%%%%@@@%%%%%%%@%%%%%%%######%%%%####XXXXX||X##X##X%||#|##XXX##%#%#%|%%%%%%%%%%%%%%%@@%%@@@%%@%%%%%#####%%%%%####XXXXXXXX#X##X||X#X%||%XXXX%%%%%#%%#%%%%%%%%%%%%%%%@@%%@%@@@@%%%%%%%%%%%%%%##XXX#XXXX#X#X#%X|||#|%X|#X#XX%%#%%%%%%%%%%%%%%%%%%%%%%%@%%%%@@%%%%%%%%%%%##%####X#XXXXXXX#||#|#|#X##|%/XXXX%%%%%%%%%%%#%%%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%####XXXXXXXXX#XX#X||#|||%//|X###X#%%%%@%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#%#####XXXXXXXXXXXX##|%%X%#%X%#####/%%%#%%%%@%%%%%%%%%%%#%%%%%%%%%%%%#%%%%%%%%######XXXX#XXXX/X#X#%X%%|%###%####|#%#%%%%@%@%#%%%%%%%%%%%%%%%%%%%%%%%#############XXXXXXXXX#XX##X###%##%#%###%X|#","cls":"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrkkkkkkkkkrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrkkkkkkkrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrkkkkkkkkrrrkkkkkrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrkkkkkkkrrrrrkkkkrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrkkkkkrrrrrkkkkkkrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrkkkkkrrrrkkkkkkkrrrkkkkkkkkkkkkrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrkkkkkrrrkkkkkrrrrrkkkrkkkkkkkrrrrrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrrrkkkkrrrrkkkkkrkkkkkkrrrrrrrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrrrkkkkrrrrkkkkkrrkkkkrrrrrrrrrrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkrkrrrrrrrrkkkkkrrrrkkkkrrrkkkrrrrrrrrkrrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkrrrrrrrrrrkkkkkkrrrrrrrrrrkkkkrrrrrrrkkkkrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkrrrkkkrrrrrrrrrrkkkkrrrrrrrrrrrrkkkkrrrrrrkkkkkkrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkrrkkrrrrrrrrrrrrrrrrrrrrrrrrrkkkkkkrrrrrrkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrrrkrrrrrrrrrrrrrrkkkkkkkkrrrrrrkkkkkkkrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrrrrrrrrrrrrrrrrrrkkkkkkkkrrrrrkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrrrrrrrrrrrrrrrrrrkkkrkkkkrrrrrkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrrrrrrrrrrrrrrrrrkkkrkkkkrrrrrkkkkkkkkkkrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrrrrrrrrrrrrrkkkkrrkkkkrrrrrkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrkrrrrrrrrrrrkkrrrkkkkkrrrrrkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrrrrrrrrrrrrrrrrkkkkkkrkrrrkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrkkkkrrkrrrrrrkkkkkkkkkkkkkkrrkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkeeeekkkkkkkkkkkkkeeeeekkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkeeeekkkkkkkkkkkkeekkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkkkkkkrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrkkkkkkkkkkkkkkkkkkkkkkrrkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrkkkkkkkkkkkkrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrrrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkrkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk","dens":"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000130000000001000000000000000000000000000000000000000000000000000000001000000356310000000430000000000000000000000000000000000000000000000000000000015000005661000000025400000000000000000000000000000000000000000000000000000013561000016571000035655100000000000000000000000000000000000000000000000000001466400000055564000365630000000000000000000000000000000000000000000000000000016553000025655562000655300001000000000000000000000000000000000000000000000000045560000265555520001656200003000000244543100000000000000000000000000000000000045560000355552000025555001451000025655555663000000000000000000000000000000010026555001555540004666551006500000465555555556610000000000000000000000000000060016555656555540036555500026400005555555556555662000000000000000000000000001550026665555555540036556100035600046555556666665556200000000000000000000000016610165755555555510026556400365600165555567777766556610000000000000000000000055500555765555555000255555566555500365555667677776555550000000000000000000000165550555565555556116555575555556100565555671004776655561000000000000000000000065564655675556555665556765555651000666556750000477665555000000000000000000000016555557655557555555567655556100030666566730000057665556100000000000000000000002655565555565555555656555562004610666666720000017666556300000000000000000000002755556555665555555757555563145400666666710000005665556500000000000000000000357855556555555555556656555578885620666667710000003766555700000000000000000001668888655555555655565557555888756755876667700000001866556700000000000000000003755888555555555755555575555876568884776667700000000766555710000000000000000004666556666655557755555555555555688656877777400000000676555710000000000000000005655454544576555676676666666555554576777777100000000666555700000000000000000005766444333564444444444454434444444566787783000000000766556700000000000000000005666544333554323323333332233223345556787730000000000765556600000000000000000004766544333322333334343322222223456566786100000000002765556500000000000000000333766443322222223333332222222223447566830000000000005655556300000000000000002647766434343222223433422222223233356657735540000000007655567100000000000000002755776566766544434645533335555665557667764770000000037655565000000000000000001776777788755577766645666677544688777667547760000000066555673000000000000000000767767888210014888654778851100178876666576750000000375556660000000000000000001658867788743247887523677874223687765666874650000001765556730000000000000000001668766677778777777323666678777777654566886440000006655566600000000000000000000568775565656777667323455667766665444574775530000037655567200000000000000000000167876544556765557323544445665443344675865600000276555664000000000000000000000056776554466555456423444343366333446787556100000665555660000000000000000000000036677666664443467423554333356665667786561000004755556720000000000000000000000003787876764334577323567443357767767775630000017665556400000000000000000000000000157777876544755323546544577878766764200000047655666000000000000000000000000000027778876655776435777556656888666820000000077655573000000000000000000000000000246678764455678877875454445888788600000000276656660000000000000000000000000001105777554544456776543334445788878400000000477655640000000000000000000000000000004777554456665555566654434688778200000000566655720000000000000000000000000000001767654854756776576766454578778100000000576656620000000000000000000000000000000478656843855566484846754587778100000000476656630000000000000000000000000000000057658855878788788846854577778100000000377666560000000000000000000000000000000027658887888898888878865567787000000000177665664000000000000000000000000000000007758888877888887888865567877100000000037766667400000000000000000000000000000005768888788788888888865557877100000000006766666651000000000000000000000000000005768888888777888888865567667200000000001777666667410000000000000000000000000005878858888888888788856687667863100000000177776666674000000000000000000000000158777738888888888638856786566678730000000016777766667500000000000000000000004888877636786887878634847876656547777300000000377776666750000000000000000000378888876746473884746645658765566556778774200000003777666672000000000000000147888878886678765775666666568755555546778787764100000057776776000000000000136888888888877654555544555455577655555557777777777763100006777677000000000025788888888887778768778888766776586645545557777777677777753103877777000000036787888888888887787868758888866866876555554577777777776777767764877777000014677788888888888887777877658768644557765454555687777777787777777777788777000477777888888888888888778788768756555687654554546877877777777777677667777877004777778888888888888888887778888888877876654544568778777776777777676766777778037777887888888888888888888877778887777766545556777888777777777677776777776678277777787888888888888888888887778777777656555678877877777677678767777767767666677777877888888888888898888888888877776667788787788777777767767767767768777667878787878788888888888888888888889888888877777788887777777666767767778767677776778787878888888888888888888888889888887777788888777777776767767767767787686766888887887888888888888888888888889888888888888888777777666776767867777686776767887888888888888888888888888888889888888888887787777777667667776767777776867777888888888887888788888888888888888888888888888777777676777676676777777877777776788888888888888888888888888888888888888888787777777767666667777788787878777777888788888888888888887888888888888788888888777777777677766677778688787778777767878888888878888888888888888888888877777777777777777767667777777778778787778777"}</script>
+<script type="application/json" id="data-matteo">{"cols":78,"rows":73,"chars":"                                                                                                                                                                                                                                                                                ########                                                                 ##################                                                         ##########%%@@%%--####                                                      #####-%%%@%%@%#--/%%%\\#####                                                  ####%%/-#%%-X%%@%%% /%%\\######                                               ####%%# /%@/#%%%//% / x%%%%@%####                                           ####/%%%x%%%//%@%%%%%%%%%%%%@@@@\\##                                          ####%%%@%%%-#%@@@@@@----%@@@@@%%@/###                                        ####@%/%@%%%%%%%%%@#//-,,-----%/ x %###                                     #####%%\\/%%/#%%%%@%//-/.,::::,,\\\\\\/ / %###                                   #####@%%%%@%%%/@@##/.,,,:::;;;;:,,\\\\/x/%#\\##                                  ###x%@ //#%@%%@@%/|,,:::;::;;;;;:::\\\\/ /#%###                                ####%%x/%/%%%@%@%///,,:;::::;;;;;;;;;\\ x %#%##                                ###\\@%%%#--#%%%@%//;;----.,,;;;;;;++;|| %%#|##                                ###/@@%%%% #%%@#////-------.,:::::;;;||%%/%|##                               ####@@%%%%%###x%/////-/--\\@@#\\|:::---,|| % @|##                               ###\\@%%%%%%## /|:;x//-\\\\.;\\--//|//-#--\\|/%%%####                              ####@@%%%### /%/;;++//----##|:.||@%%#%##%%@%####                               ##|@%/ / x /%||;+-+\\%%-#X@//\\\\|%#:..,\\#/@%%###                                ###%x /%%%/@%|++|*+;-\\-*-/xx+|.|%\\---x| /@###                                 ###@ /%@@/-\\@|+x+-::;;x-/-+++|.|%\\%@%||/ @|##                                 ##|%/x%@/|.|#xxx;;:::;;;;;-/x||||X-#%/| %/###                                ###%# /|/,#||#***++;:,:,;--//-;|||x+--+|/@###                                 ###X// ||.+;|#X*x+x+:,,///*x---.-*|;;;;|%%###                                  ###% /\\\\,|\\X#XXxx++;:////\\X--%%%%|;;;+|@###                                   ### / /\\\\:.|%XX|++x+:;--///-|-@@||::;/|###                                     ### / /\\\\/|%X|+++/;;/X----/\\-\\\\||:;/X###                                      ###% / x \\/%|x+;;;;||-%@-------\\\\\\|||##                                       ###%% / /%%%\\*x+-++\\-:-------\\@@#|||###                                        ####/ /x|+#@|\\x**/+\\::;:/---*\\-//||###                                         ###\\/ /|||@%\\Xxx/+;:;-;-\\\\/*X|-//|##                                            ##%/ |||#@@\\\\\\;+;x|,,,:;;xx*-/###                                             ### / ||\\%@@%\\\\-x;:\\,:/;++||X%###                                              #####|+\\\\#@@@%%\\---\\;+++///%###                                                 ###|++x\\%%@@@@@%#-----/#@###                                                   ##|++*x\\#%%@@@@@@@%%@@@%##                                                    ##*x;+xx\\###@@@@@@@@%@@|##                                                   ###*x;+xx***\\-\\%@@@@@@@/|##                                                   ##X*x++xx**xxx\\\\\\%@@@@%X*##                                                #####X*x+;++\\*xx++*X##@%//***####                                           #####**X**x;;;xxxxx+x*###/****\\\\/####                                       #### /;xxxxxx\\;;++++x***XX/*xxx**| /x#####                                 #####/ /|\\\\xxx+x*|::;++xx**X/xxxxxxx|/ / /######                           ###### / /x/.\\\\xx+x*|;:;++++xX//+++x+/// / x / /######                      ##### /x/ / / \\..\\+;\\\\x+;;++x+x*/;;++-//x / / / / /x/######                 #####/ / / / / x /\\.--\\\\*|::;+x--//::;//// / / /x/ / / / /#####            #####% / / / x / / / /\\\\. .\\;..\\----/...// / /x/ / / / / x / / \\####        ##### / / x / / / / /x/ / / ---.  .  .--- /x/ / / / / x / / / / /x/ #####   #####/ x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / /#### #### / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / #####/ / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x##%/ /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x/ / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / /  x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / // / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ /  /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / // / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x /  / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / // / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/  / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / // / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x  / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / /x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / //x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / /  / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / // x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / /  / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ // /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / / x / / / / /x/ / / / ","cls":"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggggggggggggggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggggggkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkggggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggggkkkkkkkkkkkkkkkkkkkkkkkkkkkggggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggggkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggggkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggggkggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkgggggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkggkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk","dens":"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007777777700000000000000000000000000000000000000000000000000000000000000000777777777777777777000000000000000000000000000000000000000000000000000000000777777777788998877777700000000000000000000000000000000000000000000000000000077777788888888775788867777700000000000000000000000000000000000000000000000000777788777886688888805886777777000000000000000000000000000000000000000000000007777887058877888768050588888877770000000000000000000000000000000000000000000777778885888768888888888888889987770000000000000000000000000000000000000000007777888888877889888876568899998885777000000000000000000000000000000000000000077779878888888888897532222335785050877700000000000000000000000000000000000007777788778877888898632112333222136505087770000000000000000000000000000000000077777988888888788773122232333333223755587677000000000000000000000000000000000077758805778888898752223333333333333475057877700000000000000000000000000000000777788558788888987532233323334333343340508787700000000000000000000000000000000777698887677888986233333212234333344436088777700000000000000000000000000000000777799888807888753345667643122322334336885877700000000000000000000000000000007777898888877758534665434699753323222226080877700000000000000000000000000000007777988888877055345534311366651256777636588877770000000000000000000000000000007777988887770583334457755777531279887877888877770000000000000000000000000000000776885050505863343458877685443287311257588877700000000000000000000000000000000777850588858854445444556765543158754556059777000000000000000000000000000000000777805899627954544333455434444148788865508677000000000000000000000000000000000776855887416755543323333333454137667866086777000000000000000000000000000000007778705652736765544432223455443226544446587770000000000000000000000000000000007777750421445765545432224755234115443335887770000000000000000000000000000000000777805622166776554433355326778888433346877700000000000000000000000000000000000777050553315876544543333345457997433457777000000000000000000000000000000000000077705054223876444433365333344476533567770000000000000000000000000000000000000077780505045875444343578876677666634677700000000000000000000000000000000000000077788050588876544443323443344689744777700000000000000000000000000000000000000007777505574787556554323334666677436777700000000000000000000000000000000000000000777650573698765544333433465664446677000000000000000000000000000000000000000000007785073579876434353222344555677770000000000000000000000000000000000000000000007770504468998755533223334456687770000000000000000000000000000000000000000000000777774456799988765543444567877700000000000000000000000000000000000000000000000007775445688899998765655779777000000000000000000000000000000000000000000000000000776445567888999999888998770000000000000000000000000000000000000000000000000000775544556777889999998987770000000000000000000000000000000000000000000000000007775544556566678999999976770000000000000000000000000000000000000000000000000007766544556655556789998866770000000000000000000000000000000000000000000000007777776544445555445677887656677770000000000000000000000000000000000000000000777776665554335555545677776556675777700000000000000000000000000000000000000077770535555554334444556666655555660557777700000000000000000000000000000000077777505423555455433444556666555555565050577777700000000000000000000000000077777705055512355456533344445665444544450505050577777700000000000000000000007777705550505061134346543444545653344433505050505055577777700000000000000000777775050505050505312224542244554432332255050505550505050577777000000000000777778050505050505050574101341133322211135050555050505050505050777770000000077777050505050505050555050504321000001235055505050505050505050505550777770007777750505050505055505050505050505050505550505050505050505050555050505057777077770505050505550505050505050505050555050505050505050505055505050505050505077777505050555050505050505050505055505050505050505050505550505050505050505050557785055505050505050505050505550505050505050505050555050505050505050505055505050550505050505050505050555050505050505050505055505050505050505050505550505050505505050505050505055505050505050505050505550505050505050505050555050505050505050050505050505550505050505050505050555050505050505050505055505050505050505050505505050555050505050505050505055505050505050505050505550505050505050505050555050055505050505050505050505550505050505050505050555050505050505050505055505050505505050505050505050555050505050505050505055505050505050505050505550505050505050050505050505055505050505050505050505550505050505050505050555050505050505050505505050505550505050505050505050555050505050505050505055505050505050505050505550050555050505050505050505055505050505050505050505550505050505050505050555050505505050505050505050505550505050505050505050555050505050505050505055505050505050050505050505050555050505050505050505055505050505050505050505550505050505050505505050505055505050505050505050505550505050505050505050555050505050505050505055050505550505050505050505050555050505050505050505055505050505050505050505550505555050505050505050505055505050505050505050505550505050505050505050555050505050050505050505050505550505050505050505050555050505050505050505055505050505050505505050505050555050505050505050505055505050505050505050505550505050505050505050050505055505050505050505050505550505050505050505050555050505050505050505055505505550505050505050505050555050505050505050505055505050505050505050505550505050"}</script>
+<script>
+(() => {
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const hash = (a, b, c) => {
+    let h = (a * 374761393 + b * 668265263 + c * 1274126177) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+  };
+  const angleDiff = (a, b) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+  const MONO = '"Geist Mono", ui-monospace, Menlo, Consolas, monospace';
+  const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+  // =================================================================
+  //  DATEN (Stand 21.10.2026). Auf der echten Webseite werden sie beim Laden live
+  //  von Ethos und DexScreener aktualisiert, falls diese Dienste es zulassen.
+  // =================================================================
+  let dataDate = null;   // Datum der letzten automatischen Aktualisierung (data/ethos.json)
+  const ETHOS = {
+    profile: 'profileId:4097',
+    score: 2240,
+    reviews: { positive: 171, neutral: 0, negative: 4 },
+    vouchers: 44,
+    whuf: 20263.694,
+    whufPrice: 2.28,
+    vouchedUsd: 46000,
+    verified: true,
+  };
+  const HISTORY = '2025-01-20:1250,2025-01-27:1250,2025-02-03:1250,2025-02-10:1250,2025-02-17:1250,2025-02-24:1250,2025-03-03:1250,2025-03-10:1435,2025-03-17:1462,2025-03-24:1338,2025-03-31:1350,2025-04-07:1408,2025-04-14:1426,2025-04-21:1433,2025-04-28:1417,2025-05-05:1417,2025-05-12:1615,2025-05-19:1658,2025-05-26:1686,2025-06-02:1724,2025-06-09:1761,2025-06-16:1794,2025-06-23:1860,2025-06-30:1887,2025-07-07:1918,2025-07-14:1940,2025-07-21:1954,2025-07-28:1942,2025-08-04:1869,2025-08-11:1880,2025-08-18:1896,2025-08-25:1910,2025-09-01:1948,2025-09-08:1921,2025-09-15:1935,2025-09-22:1948,2025-09-29:1963,2025-10-06:1978,2025-10-13:1987,2025-10-20:2008,2025-10-27:2016,2025-11-03:1892,2025-11-10:1939,2025-11-17:1937,2025-11-24:1938,2025-12-01:1938,2025-12-08:1939,2025-12-15:1940,2025-12-22:1941,2025-12-29:1941,2026-01-05:1942,2026-01-12:1942,2026-01-19:1942,2026-01-26:1944,2026-02-02:1945,2026-02-09:1944,2026-02-16:1944,2026-02-23:2031,2026-03-02:2047,2026-03-09:2047,2026-03-16:2047,2026-03-23:2049,2026-03-30:2006,2026-04-06:1959,2026-04-13:1971,2026-04-20:1976,2026-04-27:1970,2026-05-04:1970,2026-05-11:1971,2026-05-18:1972,2026-05-25:1971,2026-06-01:1972,2026-06-08:1972,2026-06-15:1959,2026-06-22:1955,2026-06-29:1947,2026-07-06:1947,2026-07-13:1947,2026-07-20:1948,2026-07-27:1943,2026-08-03:1942,2026-08-10:1941,2026-08-17:1927,2026-08-24:1928,2026-08-31:1918,2026-09-07:2089,2026-09-14:2095,2026-09-21:2102,2026-09-28:2107,2026-10-05:2079,2026-10-12:2074,2026-10-19:2240'
+    .split(',').map(s => { const [d, v] = s.split(':'); return { d, v: +v }; });
+  // Die 12 Reviews und Vouches der Personen mit dem höchsten Ethos-Score.
+  // t Titel, n Name, u Benutzername auf X, s Score der Person, k review oder vouch, w Vouch-Betrag, l Link, ts Zeitpunkt, x Text
+  const RV = (t, n, u, s, k, w, id, slug, ar, ts, x) => ({ t, n, u, s, k, w, ts, x, l: `https://app.ethos.network/activity/${k}/${id}/${slug}`,
+    a: `data/avatars/${u.toLowerCase()}.webp`, ar: `https://pbs.twimg.com/profile_images/${ar}_bigger.jpg` });
+  let REVIEWS = [
+    RV('Broker Tx - Trusted', '0xGeeGee', '0xGeeGee', 2185, 'review', '', 703982, 'broker-tx-trusted', '2088535491004207104/UhuciuuE', 1779259347,
+      'Did a broker tx with sk0rp just now, everything went smoothly, he went first sending me some Ethos XP.'),
+    RV('Loyal collector and friend', 'EEL', 'thegolden_eel', 2112, 'review', '', 25661, 'loyal-collector-and-friend', '2067059172668272640/r3KZ7Ea1', 1742061753,
+      "I met sk0rp in the NBC Discord and he's been a good and trusted friend and community member. I'm looking forward to his inevitable rise to fame and fortune"),
+    RV('Trustworthy as they come', 'MMatt', 'MutantMatt0x', 2095, 'vouch', '5K', 1000540, 'trustworthy-as-they-come', '1873019054111268864/WXjvNSqK', 1788901301,
+      'Sk0rp may ruffle a lot of feathers with his slashes and activity in the Ethos ecosystem and those beyond, but he is as good as they get in this space. I have known him a good while now and he has been nothing but helpful and kind. We need more Sk0rps.'),
+    RV('Active CT degen and Ethosian', 'CragHack | GoH', '0xCragHack', 2096, 'vouch', '100', 1002207, 'active-ct-degen-and-ethosian', '2074919090716581888/2JECsAKF', 1789122031,
+      'i genuinely love scorp, hes just insane'),
+    RV('Passionate, insightful, and real.', 'Cristian P.', 'peceka', 2094, 'vouch', '100', 1000315, 'passionate-insightful-and-real', '1922429499892744192/Mo8Q5M7s', 1788897043,
+      'Oh man, I\'ve had the pleasure of getting to know Sk0rp.eth thanks to Ethos, and from the jump, it was clear he\'s super passionate and genuinely hyped about Ethos and Web3 in general. He\'s always dropping valuable insights, asking thoughtful questions, and bringing such good vibes to every convo. He\'s a great member of the Ethos community, shows up often in Discord, and you can tell he really gets the Ethos vision and knows his stuff. Also, he\'s not afraid to call out bad players when needed, keeps things real and honest.'),
+    RV('Positive, active contributor on Ethos', 'Serpin Taxt', 'serpinxbt', 2000, 'vouch', '250', 1003339, 'positive-active-contributor-on-ethos', '2106539375316066304/7pagyHrH', 1790833719,
+      "Sk0rp has been a huge force in our community, always bringing positivity but most importantly - belief in what we are doing. He's also not afraid to call anyone out."),
+    RV('Positive community member', 'MLO', '__MLO_', 2059, 'vouch', '100', 1002666, 'positive-community-member', '1925205409649856512/_bFph13z', 1789445725,
+      'I share a few communities with Sk0rp (Ethos & Fantasy). Always brings good energy and gives great feedback. We also have a lot of mutual friends which talk highly of them.'),
+    RV('Putting time and effort into discussions', 'stellarobject', 'stellarobject1', 2044, 'vouch', '100', 1000274, 'putting-time-and-effort-into-discussions', '2097424228928933888/g4skTMiC', 1788896365,
+      'I proposed slashing Polymarket. His comment show that he put time and efforts into the nature of Ethos reputation and how to use it in the right way.'),
+    RV('Ethos Maxi, Degen Maxi', '一川drive', 'yichuan_drive', 2013, 'vouch', '199.5', 1000574, 'ethos-maxi-degen-maxi', '2108634230569701376/kpAldIoa', 1788902251,
+      'Real Chad n I can say definitely WHUF Whale! Significant in terms of contribution, significant in terms of community support, significant in any term that can apply here! Glad to know him!'),
+    RV('Positive add to Ethos', 'Premium_Saltine3', 'PremiumSaltine_', 2003, 'vouch', '100', 1001528, 'positive-add-to-ethos', '2097006912571314176/8eHFxMW2', 1788985283,
+      "I share a couple of communities with Sk0rp including Fantasy Top and Ethos. The bulk of my interactions with Sk0rp are more in the ethos discord than anything. He's been a fantastic add to the ethos community and network, and I appreciate the enthusiasm that he has for Ethos as a whole. He is genuinely engaged with the protocol and abides by his values."),
+    RV('Literally trust him with my money', 'ben walther', 'benwalther256', 2000, 'vouch', '25', 1002885, 'literally-trust-him-with-my-money', '1922503321124052992/2kwWzx_X', 1789678359,
+      "We exchanged some base eth when testing! I sent him some, he sent it back, didn't rug :) Oh and he's been a LONG time supporter of Ethos and source of good ideas."),
+    RV('One of the earliest Ethos supporters', 'chosta.eth', 'chosta_eth', 1975, 'vouch', '1.38K', 1001015, 'one-of-the-earliest-ethos-supporters', '1828032209992749056/FcDBmabB', 1788936373,
+      'I\'ve enjoyed getting to know Sk0rp through Ethos. A dedicated Ethos community member, active in Discord, he understands the vision and isn\'t afraid to call out bad actors, keeping things honest. A former fellow Fantasy Top player with great instincts.'),
+  ];
+  const LEVELS = [
+    ['Untrusted', 0, 799], ['Questionable', 800, 1199], ['Neutral', 1200, 1399], ['Known', 1400, 1599], ['Established', 1600, 1799],
+    ['Reputable', 1800, 1999], ['Exemplary', 2000, 2199], ['Distinguished', 2200, 2399], ['Revered', 2400, 2599], ['Renowned', 2600, 2800],
+  ];
+  // Stufe zu einem Score; funktioniert auch für Zwischenwerte wie 1399.6 während der Animation
+  const levelOf = s => { let i = 0; LEVELS.forEach((l, k) => { if (s >= l[1]) i = k; }); return i; };
+
+  // =================================================================
+  //  Sprachen: Englisch steht im HTML, Deutsch hier.
+  // =================================================================
+  const DE = {
+    where: 'Schweiz', sw_label: 'Zwischen Matteo und Sk0rp wechseln', lang_label: 'Sprache',
+    m_sub: 'Head of Account Management &amp; Project Manager',
+    close: 'Schliessen', lu_t: 'Luzern', lu_s: 'Kapellbrücke, Vierwaldstättersee und Pilatus', lu_open: 'Luzern zeigen', lu_next: 'Anderes Bild zeigen',
+    m_about_h: 'Über mich', m_based_t: 'Wohnort', m_based: 'Schweiz', m_int_t: 'Interessen',
+    i1: 'Krypto', i2: 'Technologie', i3: 'Finanzen', i5: 'Reisen',
+    m_do_h: 'Was ich mache',
+    m_do: '<p class="lede">Ich mache aus Kontakten Chancen und aus Chancen langfristige Partnerschaften.</p><p>Als Head of Account Management bei Patoc arbeite ich mit führenden Marken und einigen der grössten Shopping-Plattformen der Schweiz zusammen, um Kooperationen zu schaffen, die echten Mehrwert bringen.</p><p>Vom ersten Gespräch über die Verhandlung bis zum Start der Kampagne bringe ich die richtigen Menschen und Ideen zusammen. Für mich hört es aber nicht auf, wenn ein Deal unterschrieben ist. Es geht darum, Beziehungen aufzubauen, neue Chancen zu finden und langfristig gemeinsam zu wachsen.</p>',
+    m_work_h: 'Laufbahn', now: 'heute',
+    contact_h: 'Kontakt', c_mail: 'E-Mail', copy: 'Kopieren', open: 'Öffnen',
+    s_sum_cap: 'Profil-Zusammenfassung auf Ethos',
+    s_eth_label: 'Wallet-Adresse kopieren',
+    s_trust_h: 'Vertrauen auf Ethos', s_level_cap: 'Glaubwürdigkeitsstufe', s_gauge: 'Ethos-Stufen',
+    s_breakdown: 'Score-Aufschlüsselung auf Ethos',
+    s_say_h: 'Was andere sagen', prev: 'Zurück', next: 'Weiter',
+    s_journey_h: 'Krypto-Reise', jnote: 'Bitcoin-Kurs, Monatsschluss, logarithmisch', s_hist: 'Score-Verlauf',
+    cj1d: 'Dez. 2017', cj1: '<b>Erste Coins</b> Meine ersten $BTC, $ETH und $LTC gekauft',
+    cj2d: 'Mai 2019', cj2: '<b>Tiefer rein</b> Tiefer in Krypto eingestiegen und $MCO gekauft, heute Crypto.com',
+    cj3d: 'Aug. 2020', cj3: '<b>MCO zu CRO</b> Meine $MCO in $CRO getauscht.',
+    cj4d: 'Anfang 2021', cj4: '<b>DeFi auf BSC</b> In die DeFi-Welle auf [bsc] eingestiegen',
+    cj5d: 'Sept. 2021', cj5: '<b>Erster Bullrun</b> Meinen ersten echten Bullrun erlebt.',
+    cj6d: 'Nov. 2021', cj6: '<b>All in</b> Stark in $KDA, $CRO, $ETH, $BNB und viele weitere eingestiegen',
+    cj7d: 'Apr. 2022', cj7: '<b>Kadena</b> Angefangen, für [kadena] zu arbeiten',
+    cj8d: 'Ende&nbsp;2023 – Mitte&nbsp;2024', cj8: '<b>Blast</b> $BLAST gefarmt und tolle Leute bei Fantasy Top und New Blast City kennengelernt',
+    cj9d: 'März&nbsp;2025 – heute', cj9: '<b>Base und Ethos</b> Zum [base]- und [ethos]-Maxi geworden', s_chart: 'Ethos-Score von Januar 2025 bis heute',
+    s_foot: 'Mit dem Schalter oben triffst du Matteo, die Person hinter Sk0rp.', write: 'Schreiben',
+  };
+  const UI = {
+    en: {
+      locale: 'en-US', pause: 'Pause motion', play: 'Play motion', copied: 'Copied', select: 'Selected',
+      pm: 'Portrait of Matteo drawn in characters, with a green outline.',
+      ps: 'Sk0rp drawn in characters: a head with red flames, white eyes, an open mouth and a red tail.',
+      pos: 'positive reviews', pct: p => `${p} positive`, usdL: 'vouched in WHUF', whuf: (w, p) => `${w} WHUF at ${p}`,
+      vouchers: 'people vouch for me', human: 'Verified human',
+      snap: d => `Snapshot from ${d}`, live: 'Live from Ethos',
+      lvl: (n, i, a, b) => `<b>${n}</b>: level ${i} of 10, score ${a} to ${b}`,
+      cur: (n, s, i, m) => `<b>${n}</b> is level ${i} of 10. ${s} of ${m} points.`,
+      review: 'Positive review', by: 'by', of: 'of', read: 'View on Ethos', more: 'Read more', btcL: p => `BTC ${p}`, vouched: w => `Vouched ${w} WHUF`,
+      ethCopied: 'Wallet address copied', lvlOf: i => `Level ${i} of 10`, d30: 'in the last 30 days', toNext: n => `points to ${n}`, top: 'Highest level reached',
+      upd: d => `Updated daily from Ethos, last on ${d}`, ring: (s, n) => `Ethos score ${s} of 2800, level ${n}`,
+      j_start: 'Joined Ethos with a starting score of 1250.',
+      j_level: n => `Reached the level ${n}.`,
+      j_early: 'Before Ethos: NFT and Web3 communities such as Pudgy Penguins and Fantasy Top, where many of my reviewers first met me.',
+      j_broker: 'First broker deals through Ethos. Reviewers call them smooth and prompt.',
+      j_today: (s) => `Today: ${s}, Distinguished, with 42 vouches.`,
+      before: 'Before 2025',
+    },
+    de: {
+      locale: 'de-CH', pause: 'Bewegung anhalten', play: 'Bewegung starten', copied: 'Kopiert', select: 'Markiert',
+      pm: 'Portrait von Matteo aus Schriftzeichen, mit grüner Kontur.',
+      ps: 'Sk0rp aus Schriftzeichen: ein Kopf mit roten Flammen, weissen Augen, offenem Maul und rotem Schwanz.',
+      pos: 'positive Bewertungen', pct: p => `${p} positiv`, usdL: 'in WHUF gevoucht', whuf: (w, p) => `${w} WHUF zu ${p}`,
+      vouchers: 'Personen vouchen für mich', human: 'Verifizierter Mensch',
+      snap: d => `Stand ${d}`, live: 'Live von Ethos',
+      lvl: (n, i, a, b) => `<b>${n}</b>: Stufe ${i} von 10, Score ${a} bis ${b}`,
+      cur: (n, s, i, m) => `<b>${n}</b> ist Stufe ${i} von 10. ${s} von ${m} Punkten.`,
+      review: 'Positive Bewertung', by: 'von', of: 'von', read: 'Auf Ethos ansehen', more: 'Weiterlesen', btcL: p => `BTC ${p}`, vouched: w => `Vouch über ${w} WHUF`,
+      ethCopied: 'Wallet-Adresse kopiert', lvlOf: i => `Stufe ${i} von 10`, d30: 'in den letzten 30 Tagen', toNext: n => `Punkte bis ${n}`, top: 'Höchste Stufe erreicht',
+      upd: d => `Täglich von Ethos aktualisiert, zuletzt am ${d}`, ring: (s, n) => `Ethos-Score ${s} von 2800, Stufe ${n}`,
+      j_start: 'Bei Ethos gestartet, mit einem Score von 1250.',
+      j_level: n => `Stufe ${n} erreicht.`,
+      j_early: 'Vor Ethos: NFT- und Web3-Communities wie Pudgy Penguins und Fantasy Top, wo mich viele meiner Reviewer kennengelernt haben.',
+      j_broker: 'Erste Broker-Deals über Ethos. Reviewer nennen sie reibungslos und schnell.',
+      j_today: (s) => `Heute: ${s}, Distinguished, mit 42 Vouches.`,
+      before: 'Vor 2025',
+    },
+  };
+  const EN = {};
+  document.querySelectorAll('[data-t]').forEach(el => { EN[el.dataset.t] = el.innerHTML; });
+  document.querySelectorAll('[data-ta]').forEach(el => { EN[el.dataset.ta] = el.getAttribute('aria-label'); });
+  let lang = store.get('lang') === 'de' ? 'de' : 'en';
+  let isLive = false;
+  const L = () => UI[lang];
+  const fmt = (n, o = {}) => new Intl.NumberFormat(L().locale, o).format(n);
+  const fmtDate = (iso, o = { day: 'numeric', month: 'short', year: 'numeric' }) => new Intl.DateTimeFormat(L().locale, o).format(new Date(iso + 'T12:00:00Z'));
+
+  function setLang(l) {
+    lang = l;
+    const dict = l === 'de' ? DE : EN;
+    document.querySelectorAll('[data-t]').forEach(el => { const v = dict[el.dataset.t] ?? EN[el.dataset.t]; if (v != null && el.innerHTML !== v) el.innerHTML = v; });
+    document.querySelectorAll('[data-ta]').forEach(el => el.setAttribute('aria-label', dict[el.dataset.ta] ?? EN[el.dataset.ta]));
+    document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+    root.lang = l;
+    motionBtn.textContent = (raf || !started) ? L().pause : L().play;
+    pc.setAttribute('aria-label', mode === 'matteo' ? L().pm : L().ps);
+    store.set('lang', l);
+    tickClock();
+    renderOnchain();
+    chipifyJourney();
+    if (mode === 'sk0rp') requestAnimationFrame(layoutJourney);
+    if (typeof catOpen !== 'undefined' && catOpen) fillCat(catOpen);
+  }
+
+  // =================================================================
+  //  Icons: Dateien im Ordner icons/. Fehlt eine Datei, bleibt das Icon einfach weg.
+  // =================================================================
+  const iconOk = {};
+  document.querySelectorAll('.ico[data-icon]').forEach(el => {
+    const name = el.dataset.icon, src = `icons/${name}.${name === 'ethos' ? 'png' : 'svg'}`;
+    const apply = () => { el.style.setProperty('--src', `url("${src}")`); el.classList.add('ok'); };
+    if (iconOk[name] === true) return apply();
+    const img = new Image();
+    img.onload = () => { iconOk[name] = true; document.querySelectorAll(`.ico[data-icon="${name}"]`).forEach(e => { e.style.setProperty('--src', `url("${src}")`); e.classList.add('ok'); }); };
+    img.src = src;
+  });
+
+  // =================================================================
+  //  Farben beider Welten (passend zu den CSS-Tokens)
+  // =================================================================
+  const PAL = {
+    matteo: { bg: '#ECEDEA', fg: '#141615', muted: '#5F6663', accent: '#4E9E83', accentInk: '#1C4A3B', eye: '#FFFFFF',
+              violet: '#6A5A9C', snakeA: ['#4E9E83', '#1F5444', '#97C9B6'], snakeB: ['#7A7D7A', '#2B2D2C', '#B0B3B0'] },
+    sk0rp:  { bg: '#100E12', fg: '#E9E6EA', muted: '#958F99', accent: '#D25A4D', accentInk: '#F5ADA2', eye: '#FFFFFF',
+              violet: '#7B4FC4', snakeA: ['#D25A4D', '#F5ADA2', '#7A2C25'], snakeB: ['#6E47B0', '#CDB6F2', '#3A2462'] },
+  };
+  const CATPAL = {
+    dark:  { matteo: { body: '#1C1B1E', point: '#1C1B1E', edge: '#46424C', glyph: '#8E8996', eye: '#F0A238' },
+             sk0rp:  { body: '#2B2531', point: '#2B2531', edge: '#6E637A', glyph: '#BBB2C6', eye: '#FFB347' } },
+    light: { matteo: { body: '#FAF4EA', point: '#6E5747', edge: '#B9A592', glyph: '#A38D78', eye: '#5E9BDA' },
+             sk0rp:  { body: '#F1E9DF', point: '#7A6252', edge: '#BDAC99', glyph: '#9E8A77', eye: '#8CC2F2' } },
+  };
+  const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const mixHex = (a, b, m) => { const A = hex(a), B = hex(b); return `rgb(${Math.round(A[0] + (B[0] - A[0]) * m)},${Math.round(A[1] + (B[1] - A[1]) * m)},${Math.round(A[2] + (B[2] - A[2]) * m)})`; };
+  let mix = 0, mixTarget = 0; const C = {};
+  function computeColors() {
+    const a = PAL.matteo, b = PAL.sk0rp, m = mix * mix * (3 - 2 * mix);
+    for (const k of ['bg', 'fg', 'muted', 'accent', 'accentInk', 'eye', 'violet']) C[k] = mixHex(a[k], b[k], m);
+    C.logo = m;
+    C.snakeA = a.snakeA.map((c, i) => mixHex(c, b.snakeA[i], m));
+    C.cat = {};
+    for (const id of ['dark', 'light']) { C.cat[id] = {}; for (const k in CATPAL[id].matteo) C.cat[id][k] = mixHex(CATPAL[id].matteo[k], CATPAL[id].sk0rp[k], m); }
+    C.snakeB = a.snakeB.map((c, i) => mixHex(c, b.snakeB[i], m));
+  }
+
+  // =================================================================
+  //  Hintergrund: ASCII-Schlangen, Schwebeteilchen, Wellenringe
+  // =================================================================
+  const CW = 8, CH = 10, FONT = 9;
+  const RAMP = ".':;tox%SX8@#";
+  const cvs = document.getElementById('lake'), ctx = cvs.getContext('2d');
+  let W = 0, H = 0, cols = 0, rows = 0, dens, tint, trail, glow, logoMask;
+  let cats = [], catCells = [], plankton = [], ripples = [], veils = [], pointer = null, t = 0;
+
+  function makeSnake(which, x, y, h) {
+    const len = rand(320, 400), n = 30, cruise = rand(30, 42);
+    const s = { which, len, h, v: cruise, cruise, phase: rand(0, 6.28), wander: 0, boost: 0, pts: [] };
+    const seg = len / (n - 1);
+    for (let i = 0; i < n; i++) s.pts.push({ x: x - Math.cos(h) * seg * i, y: y - Math.sin(h) * seg * i });
+    return s;
+  }
+  function makeCluster(initial) {
+    const cells = [], n = Math.round(rand(2, 7));
+    let cx = 0, cy = 0;
+    for (let i = 0; i < n; i++) { cells.push({ dx: cx, dy: cy, ch: Math.random() < .8 ? '-' : '.' }); cx += Math.round(rand(-1, 2.2)); cy += Math.round(rand(-.8, 1.4)); }
+    return { x: rand(0, W), y: rand(0, H), vx: rand(-5, 5), vy: rand(-3, 3), cells, age: initial ? rand(0, 8) : 0, life: rand(6, 14) };
+  }
+  function populate() {
+    const sc = W < 600 ? 1.05 : 1.45;
+    cats = [makeCat('dark', W * .78, H * .78, sc), makeCat('light', W * .22, H * .6, sc)];
+    plankton = [];
+    const nP = Math.round(W * H / 42000);
+    for (let i = 0; i < nP; i++) plankton.push(makeCluster(true));
+  }
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), first = !W;
+    W = innerWidth; H = innerHeight;
+    cvs.width = Math.round(W * dpr); cvs.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cols = Math.ceil(W / CW); rows = Math.ceil(H / CH);
+    dens = new Float32Array(cols * rows); tint = new Uint8Array(cols * rows); trail = new Float32Array(cols * rows);
+    glow = new Float32Array(cols * rows); logoMask = new Float32Array(cols * rows);
+    buildLogoMask();
+    if (first) populate();
+    sizePortrait();
+    if (!raf) drawAll();
+  }
+  function measureVeils() {
+    veils = [];
+    document.querySelectorAll('[data-veil]').forEach(el => {
+      if (el.hidden) return;
+      const r = el.getBoundingClientRect();
+      if (r.bottom < -80 || r.top > H + 80 || !r.width) return;
+      veils.push({ l: r.left - 8, r: r.right + 8, t: r.top - 6, b: r.bottom + 6 });
+    });
+    const p = pc.getBoundingClientRect();
+    veils.push({ l: p.left, r: p.right, t: p.top, b: p.bottom });
+  }
+  function veil(x, y) {
+    let best = Infinity;
+    for (const r of veils) {
+      const ex = Math.max(r.l - x, 0, x - r.r), ey = Math.max(r.t - y, 0, y - r.b);
+      const d = ex * ex + ey * ey;
+      if (d < best) best = d;
+      if (best === 0) return .12;
+    }
+    const d = Math.sqrt(best);
+    return d > 64 ? 1 : .12 + .88 * (d / 64);
+  }
+  function flee(hx, hy, x, y, R, k, acc) {
+    const ex = hx - x, ey = hy - y, d = Math.hypot(ex, ey);
+    if (d < R && d > 0) { const w = (1 - d / R) * k; acc.dx += ex / d * w; acc.dy += ey / d * w; acc.threat = Math.max(acc.threat, 1 - d / R); }
+  }
+  function updateLake(dt) {
+    t += dt;
+    updateCats(dt);
+    const decay = Math.pow(.12, dt);
+    for (let i = 0; i < trail.length; i++) trail[i] = trail[i] > .01 ? trail[i] * decay : 0;
+    for (let i = 0; i < plankton.length; i++) {
+      const p = plankton[i];
+      p.age += dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.age > p.life) plankton[i] = makeCluster(false);
+    }
+    for (const r of ripples) r.age += dt;
+    ripples = ripples.filter(r => r.age < 1.6);
+  }
+  function splat(x, y, d, ti) {
+    const cx = Math.floor(x / CW), cy = Math.floor(y / CH);
+    if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) return;
+    const i = cy * cols + cx;
+    if (d > dens[i]) { dens[i] = d; tint[i] = ti; }
+  }
+  // ---------------------------------------------------------------
+  //  Zwei Katzen wohnen im Hintergrund (Easter Egg). Anklicken öffnet ihren Steckbrief.
+  // ---------------------------------------------------------------
+  function makeCat(id, x, y, sc) {
+    return { id, x, y, ty: y, dir: Math.random() < .5 ? -1 : 1, v: 0, speed: id === 'dark' ? 34 : 27, state: 'walk', timer: rand(3, 7), phase: rand(0, 6), s: sc, hover: false, z: [] };
+  }
+  function catHit(c, x, y) { return Math.abs(x - c.x) < 46 * c.s && y > c.y - 42 * c.s && y < c.y + 26 * c.s; }
+  function updateCats(dt) {
+    for (const c of cats) {
+      c.timer -= dt;
+      for (const r of ripples) if (r.k === 1 && r.age < .25 && c.state !== 'run' && Math.hypot(r.x - c.x, r.y - c.y) < 230) { c.state = 'run'; c.timer = 1.6; c.dir = r.x < c.x ? 1 : -1; }
+      const near = pointer && Math.hypot(pointer.x - c.x, pointer.y - c.y) < 140;
+      if (c.state !== 'run' && (near || c.hover)) {
+        c.state = 'look'; c.timer = Math.max(c.timer, .8);
+        if (pointer) c.dir = pointer.x < c.x ? -1 : 1;
+      } else if (c.timer <= 0) {
+        if (c.state === 'walk') { const r = Math.random(); c.state = r < .5 ? 'sit' : (r < .78 ? 'sleep' : 'walk'); }
+        else { c.state = 'walk'; if (Math.random() < .5) c.dir *= -1; c.ty = rand(H * .25, H * .88); }
+        c.timer = c.state === 'walk' ? rand(4, 9) : c.state === 'sit' ? rand(3, 6) : rand(6, 11);
+      }
+      const want = c.state === 'walk' ? c.speed : c.state === 'run' ? c.speed * 3.4 : 0;
+      c.v += (want - c.v) * Math.min(1, dt * 3);
+      c.x += c.dir * c.v * dt;
+      if (c.state === 'walk' || c.state === 'run') c.y += (c.ty - c.y) * Math.min(1, dt * .35);
+      c.phase += dt * (1.2 + c.v / 8);
+      const m = 60 * c.s;
+      if (c.x < m) { c.x = m; c.dir = 1; }
+      if (c.x > W - m) { c.x = W - m; c.dir = -1; }
+      c.y = Math.max(70, Math.min(H - 36, c.y));
+      // nicht hinter das Portrait laufen: aus dessen Fläche hinausschieben und umdrehen
+      const pr = pc.getBoundingClientRect();
+      if (pr.width) {
+        const hw = 50 * c.s, top = 46 * c.s, bot = 30 * c.s;
+        if (c.x + hw > pr.left && c.x - hw < pr.right && c.y + bot > pr.top && c.y - top < pr.bottom) {
+          const pushL = c.x + hw - pr.left, pushR = pr.right - (c.x - hw), pushU = c.y + bot - pr.top, pushD = pr.bottom - (c.y - top);
+          const roomL = pr.left - hw > m, roomR = pr.right + hw < W - m;
+          const opts = [[pushL, 'L', roomL], [pushR, 'R', roomR], [pushU, 'U', pr.top - bot > 70], [pushD, 'D', pr.bottom + top < H - 36]].filter(o => o[2]).sort((a, b) => a[0] - b[0]);
+          const o = opts[0];
+          if (o && o[1] === 'L') { c.x -= o[0]; c.dir = -1; }
+          else if (o && o[1] === 'R') { c.x += o[0]; c.dir = 1; }
+          else if (o && o[1] === 'U') { c.y -= o[0]; c.ty = c.y; }
+          else if (o) { c.y += o[0]; c.ty = c.y; }
+        }
+      }
+      if (c.state === 'sleep' && Math.random() < dt * 1.1) c.z.push({ x: c.x + c.dir * 18 * c.s, y: c.y - 14 * c.s, age: 0 });
+      for (const z of c.z) { z.age += dt; z.y -= dt * 16; z.x += Math.sin(z.age * 3) * .35; }
+      c.z = c.z.filter(z => z.age < 2.2);
+    }
+  }
+  const inEll = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+  const inTri = (x, y, a, b, c) => {
+    const d1 = (x - b[0]) * (a[1] - b[1]) - (a[0] - b[0]) * (y - b[1]);
+    const d2 = (x - c[0]) * (b[1] - c[1]) - (b[0] - c[0]) * (y - c[1]);
+    const d3 = (x - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (y - a[1]);
+    return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+  };
+  const nearPoly = (x, y, pts, w) => {
+    for (let k = 0; k < pts.length - 1; k++) {
+      const [ax, ay] = pts[k], [bx, by] = pts[k + 1], dx = bx - ax, dy = by - ay;
+      const u = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy || 1)));
+      if (Math.hypot(x - ax - dx * u, y - ay - dy * u) < w) return true;
+    }
+    return false;
+  };
+  // Form einer Katze in lokalen Koordinaten (Blick nach rechts, Boden bei y = 22)
+  function catPose(c) {
+    const ph = c.phase, moving = c.state === 'walk' || c.state === 'run';
+    if (c.state === 'sleep') {
+      const hx = 19, hy = 7;
+      return { body: [[0, 9, 26, 13]], head: [hx, hy, 10], ears: [[[hx - 7, hy - 5], [hx - 4, hy - 16], [hx + 1, hy - 8]], [[hx + 1, hy - 8], [hx + 7, hy - 15], [hx + 9, hy - 3]]],
+        tail: Array.from({ length: 8 }, (_, k) => [-22 + k * 5.2, 15 + Math.sin(k / 7 * Math.PI) * 6]), legs: [], eyes: [], tailW: 3.4 };
+    }
+    if (c.state === 'sit' || c.state === 'look') {
+      const hx = 8, hy = -22, look = c.state === 'look';
+      const blink = (t % 4.3) < .14;
+      return { body: [[-2, 3, 17, 19]], head: [hx, hy, 11], ears: [[[hx - 9, hy - 6], [hx - 7, hy - 20], [hx + 0, hy - 10]], [[hx + 0, hy - 10], [hx + 7, hy - 20], [hx + 10, hy - 5]]],
+        tail: Array.from({ length: 7 }, (_, k) => [-16 + k * 5, 20 - (k > 4 ? Math.sin(ph * 1.6) * 3 * (k - 4) : 0)]),
+        legs: [[[7, 8], [8, 22]], [[13, 8], [14, 22]]], legW: 3,
+        eyes: blink ? [] : (look ? [[hx - 4, hy - 1], [hx + 4, hy - 1]] : [[hx + 5, hy - 1]]), tailW: 3.4 };
+    }
+    const sw = moving ? (c.state === 'run' ? 9 : 6) : 0, hx = 31, hy = -14;
+    const legs = [[-20, 0], [-12, Math.PI], [14, Math.PI], [21, 0]].map(([x, o]) => [[x, 6], [x + Math.sin(ph * 2 + o) * sw, 22]]);
+    return { body: [[0, 0, 30, 13]], head: [hx, hy, 11], ears: [[[hx - 8, hy - 7], [hx - 6, hy - 20], [hx + 1, hy - 10]], [[hx + 0, hy - 10], [hx + 6, hy - 20], [hx + 9, hy - 5]]],
+      tail: Array.from({ length: 7 }, (_, k) => [-27 - k * 4.2, -3 - k * 4.5 + Math.sin(ph * 1.3 + k * .7) * k * .9]),
+      legs, legW: 3.2, eyes: (t % 5.1) < .14 ? [] : [[hx + 5, hy - 2]], tailW: 3.4 };
+  }
+  // 0 leer, 1 Fell, 2 Abzeichen (Ohren, Maske, Schwanz, Pfoten), 3 Auge
+  function catAt(P, x, y) {
+    for (const e of P.eyes) if (Math.hypot(x - e[0], y - e[1]) < 2.4) return 3;
+    const [hx, hy, hr] = P.head;
+    for (const tr of P.ears) if (inTri(x, y, tr[0], tr[1], tr[2])) return 2;
+    if (Math.hypot(x - hx, y - hy) <= hr) return (x > hx - 2 && y > hy - 6) ? 2 : 1;
+    if (nearPoly(x, y, P.tail, P.tailW)) return 2;
+    for (const l of P.legs) if (nearPoly(x, y, l, P.legW)) return y > 16 ? 2 : 1;
+    for (const b of P.body) if (inEll(x, y, b[0], b[1], b[2], b[3])) return 1;
+    return 0;
+  }
+  function prepCats() {
+    catCells = [];
+    if (C.logo > .98) return;   // auf der Sk0rp-Seite keine Katzen
+    for (const c of cats) {
+      const P = catPose(c), s = c.s;
+      const c0 = Math.max(0, Math.floor((c.x - 62 * s) / CW)), c1 = Math.min(cols - 1, Math.floor((c.x + 62 * s) / CW));
+      const r0 = Math.max(0, Math.floor((c.y - 48 * s) / CH)), r1 = Math.min(rows - 1, Math.floor((c.y + 28 * s) / CH));
+      const ox = CW * .55 / s, oy = CH * .55 / s;
+      for (let cy = r0; cy <= r1; cy++) for (let cx = c0; cx <= c1; cx++) {
+        const lx = (cx * CW + CW / 2 - c.x) / s * c.dir, ly = (cy * CH + CH / 2 - c.y) / s;
+        const code = catAt(P, lx, ly);
+        if (!code) continue;
+        const edge = code !== 3 && (!catAt(P, lx + ox, ly) || !catAt(P, lx - ox, ly) || !catAt(P, lx, ly + oy) || !catAt(P, lx, ly - oy));
+        const i = cy * cols + cx;
+        dens[i] = 1;
+        catCells.push({ cx, cy, code, edge, id: c.id });
+      }
+    }
+  }
+  function drawCats() {
+    const tick = Math.floor(t * 2);
+    for (const k of catCells) {
+      const x0 = k.cx * CW, y0 = k.cy * CH, pal = C.cat[k.id];
+      const v = Math.max(.6, veil(x0 + CW / 2, y0 + CH / 2));
+      const fill = k.code === 3 ? pal.eye : k.edge ? pal.edge : (k.code === 2 ? pal.point : pal.body);
+      const fadeOut = 1 - C.logo;
+      ctx.globalAlpha = .96 * v * fadeOut; ctx.fillStyle = fill;
+      ctx.fillRect(x0 + .5, y0 + .5, CW - 1, CH - 1);
+      const ch = k.code === 3 ? 'o' : k.edge ? ':;+='[Math.floor(hash(k.cx, k.cy, 9) * 4)] : '%#@8x'[Math.floor(hash(k.cx, k.cy, tick) * 5)];
+      ctx.globalAlpha = (k.code === 3 ? .9 : .55) * v * fadeOut; ctx.fillStyle = k.code === 3 ? pal.body : pal.glyph;
+      ctx.fillText(ch, x0 + CW / 2, y0 + CH / 2 + .5);
+    }
+    if (C.logo > .98) { ctx.globalAlpha = 1; return; }
+    for (const c of cats) {
+      ctx.fillStyle = C.muted;
+      for (const z of c.z) { ctx.globalAlpha = Math.max(0, 1 - z.age / 2.2) * .9; ctx.fillText(z.age < 1 ? 'z' : 'Z', z.x, z.y); }
+      if (c.hover) {
+        ctx.globalAlpha = 1; ctx.fillStyle = C.accent;
+        ctx.font = `500 ${FONT + 3}px ${MONO}`;
+        ctx.fillText(lang === 'de' ? 'miau?' : 'meow?', c.x, c.y - 50 * c.s);
+        ctx.font = `500 ${FONT}px ${MONO}`;
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------------------------------------------------------------
+  //  Cursor: hinterlässt eine leuchtende Spur aus Zeichen.
+  //  Auf der Sk0rp-Seite liegt das Ethos-Logo (icons/ethos.png) als ASCII-Muster im Hintergrund;
+  //  unter dem Cursor leuchtet es auf.
+  // ---------------------------------------------------------------
+  let logoImg = null, lastStamp = null;
+  (() => { const img = new Image(); img.onload = () => { logoImg = img; buildLogoMask(); if (!raf) drawAll(); }; img.src = 'icons/ethos.png'; })();
+  function buildLogoMask() {
+    if (!logoMask) return;
+    logoMask.fill(0);
+    if (!logoImg) return;
+    const oc = document.createElement('canvas'); oc.width = cols; oc.height = rows;
+    const o = oc.getContext('2d');
+    const iw = logoImg.naturalWidth || 100, ih = logoImg.naturalHeight || 100;
+    const S = Math.min(W, H) * .62, sc = S / Math.max(iw, ih), pw = iw * sc, ph = ih * sc;
+    o.drawImage(logoImg, (W / 2 - pw / 2) / CW, (H / 2 - ph / 2) / CH, pw / CW, ph / CH);
+    const px = o.getImageData(0, 0, cols, rows).data;
+    for (let i = 0; i < cols * rows; i++) logoMask[i] = px[i * 4 + 3] / 255;
+  }
+  function stamp(x, y, R) {
+    const c0 = Math.max(0, Math.floor((x - R) / CW)), c1 = Math.min(cols - 1, Math.floor((x + R) / CW));
+    const r0 = Math.max(0, Math.floor((y - R) / CH)), r1 = Math.min(rows - 1, Math.floor((y + R) / CH));
+    for (let cy = r0; cy <= r1; cy++) for (let cx = c0; cx <= c1; cx++) {
+      const d = Math.hypot(cx * CW + CW / 2 - x, (cy * CH + CH / 2 - y) * 1.1);
+      if (d >= R) continue;
+      const v = (1 - d / R) ** 2, i = cy * cols + cx;
+      if (v > glow[i]) glow[i] = v;
+    }
+  }
+  function updateGlow(dt) {
+    const dec = Math.pow(.05, dt);
+    for (let i = 0; i < glow.length; i++) glow[i] = glow[i] > .004 ? glow[i] * dec : 0;
+    if (!pointer) { lastStamp = null; return; }
+    const R = 120;
+    if (lastStamp) {
+      const dx = pointer.x - lastStamp.x, dy = pointer.y - lastStamp.y, n = Math.min(12, Math.ceil(Math.hypot(dx, dy) / 24));
+      for (let k = 1; k <= n; k++) stamp(lastStamp.x + dx * k / n, lastStamp.y + dy * k / n, R);
+    } else stamp(pointer.x, pointer.y, R);
+    lastStamp = { x: pointer.x, y: pointer.y };
+  }
+  const NOISE = ".:-+*x=", LOGO = ":+x%#@";
+  function drawGlow() {
+    const tk = Math.floor(t * 7), L = C.logo;
+    for (let i = 0; i < glow.length; i++) {
+      const g = glow[i], lg = logoMask[i] * L;
+      if (g < .03 && lg < .05) continue;
+      if (dens[i] > .04) continue;
+      const cx = i % cols, cy = Math.floor(i / cols), x0 = cx * CW, y0 = cy * CH;
+      const v = Math.max(.45, veil(x0 + CW / 2, y0 + CH / 2));
+      if (lg >= .05) {
+        { ctx.globalAlpha = (lg * .13 + g * .5) * v; ctx.fillStyle = C.violet; ctx.fillRect(x0 + .5, y0 + .5, CW - 1, CH - 1); }
+        ctx.globalAlpha = Math.min(1, lg * .5 + g * 1.1) * v;
+        ctx.fillStyle = g > .35 ? C.accent : C.violet;
+        const j = Math.floor(hash(cx, cy, g > .05 ? tk : 3) * 2);
+        ctx.fillText(LOGO[Math.min(LOGO.length - 1, Math.floor(lg * 3 + g * 3) + j)], x0 + CW / 2, y0 + CH / 2 + .5);
+      } else {
+        ctx.globalAlpha = g * .22 * v; ctx.fillStyle = L > .5 ? C.violet : C.accent;
+        ctx.fillRect(x0 + .5, y0 + .5, CW - 1, CH - 1);
+        ctx.globalAlpha = Math.min(1, g * 1.15) * v;
+        ctx.fillStyle = g > .45 ? C.accent : (L > .5 ? C.violet : C.fg);
+        ctx.fillText(NOISE[Math.floor(hash(cx, cy, tk) * (2 + g * 5))], x0 + CW / 2, y0 + CH / 2 + .5);
+      }
+    }
+  }
+  function drawLake() {
+    measureVeils();
+    ctx.clearRect(0, 0, W, H);
+    dens.fill(0);
+    prepCats();
+    ctx.font = `500 ${FONT}px ${MONO}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const tick = Math.floor(t * 2.5);
+    drawGlow();
+    ctx.fillStyle = C.muted;
+    for (const p of plankton) {
+      const fade = Math.min(1, p.age / 1.5, (p.life - p.age) / 1.5);
+      if (fade <= 0) continue;
+      const bx = Math.floor(p.x / CW), by = Math.floor(p.y / CH);
+      for (const c of p.cells) {
+        const cx = bx + c.dx, cy = by + c.dy;
+        if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) continue;
+        const px = cx * CW + CW / 2, py = cy * CH + CH / 2;
+        ctx.globalAlpha = .5 * fade * veil(px, py);
+        ctx.fillText(c.ch, px, py);
+      }
+    }
+    for (let i = 0; i < trail.length; i++) {
+      const v = trail[i];
+      if (v < .06 || dens[i] > .04) continue;
+      const px = (i % cols) * CW + CW / 2, py = Math.floor(i / cols) * CH + CH / 2;
+      ctx.globalAlpha = v * .55 * veil(px, py);
+      ctx.fillText(v > .35 ? '~' : '-', px, py);
+    }
+    for (const r of ripples) {
+      const R = r.age * 170 * r.k, alpha = (1 - r.age / 1.6) * .6 * Math.min(1, r.k + .2), n = Math.max(10, Math.round(2 * Math.PI * R / CW));
+      ctx.fillStyle = r.k < 1 ? C.accent : C.muted;
+      for (let k = 0; k < n; k++) {
+        const ang = k / n * Math.PI * 2;
+        const cx = Math.floor((r.x + Math.cos(ang) * R) / CW), cy = Math.floor((r.y + Math.sin(ang) * R * .82) / CH);
+        if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) continue;
+        const px = cx * CW + CW / 2, py = cy * CH + CH / 2;
+        ctx.globalAlpha = alpha * (r.k < 1 ? 1 : veil(px, py));
+        ctx.fillText(k % 3 ? '~' : '-', px, py);
+      }
+    }
+    drawCats();
+    ctx.globalAlpha = 1;
+  }
+
+  // =================================================================
+  //  Portrait: zwei gleich grosse ASCII-Raster, die ineinander übergehen
+  // =================================================================
+  const pc = document.getElementById('portrait'), pctx = pc.getContext('2d');
+  const DS = JSON.parse(document.getElementById('data-sk0rp').textContent);
+  const DM = JSON.parse(document.getElementById('data-matteo').textContent);
+  const PCW = 7, PCH = 9, PCOLS = DS.cols, PROWS = DS.rows, PW = PCOLS * PCW, PH = PROWS * PCH, N = PCOLS * PROWS;
+  const TAIL_COL = Math.round(PCOLS * .73), TAIL_BASE = Math.round(PROWS * .72), FLAME_ROW = Math.round(PROWS * .42);
+  const FLAME = ".':^*x%#";
+  function buildGrid(D, who) {
+    const g = new Array(N).fill(null);
+    for (let i = 0; i < N; i++) {
+      const ch = D.chars[i], cl = D.cls[i];
+      if (ch === ' ' && cl !== 'e') continue;
+      const c = i % PCOLS, r = Math.floor(i / PCOLS);
+      const tail = who === 'sk0rp' && c >= TAIL_COL && r < TAIL_BASE;
+      const flame = who === 'sk0rp' && cl === 'r' && !tail && r < FLAME_ROW;
+      g[i] = { c, r, ch, cl, d: +D.dens[i] / 9, tail, flame };
+    }
+    return g;
+  }
+  const grids = { matteo: buildGrid(DM, 'matteo'), sk0rp: buildGrid(DS, 'sk0rp'), none: new Array(N).fill(null) };
+  const flameTops = grids.sk0rp.filter(k => k && k.flame && (k.r === 0 || !(grids.sk0rp[(k.r - 1) * PCOLS + k.c] || {}).flame));
+  const delays = new Float32Array(N);
+  for (let i = 0; i < N; i++) { const c = i % PCOLS, r = Math.floor(i / PCOLS); delays[i] = (r / PROWS) * .7 + Math.abs(c / PCOLS - .5) * .25 + Math.random() * .25; }
+  let pt = 0, nextBlink = rand(2.5, 5), sparks = [], ppointer = null, portraitVisible = true, morph = null;
+
+  function sizePortrait() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    pc.width = Math.round(PW * dpr); pc.height = Math.round(PH * dpr);
+    pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function updatePortrait(dt) {
+    pt += dt;
+    if (pt > nextBlink + .16) nextBlink = pt + rand(3, 7);
+    if (mode === 'sk0rp' && !morph && Math.random() < dt * 7 && flameTops.length) {
+      const k = flameTops[Math.floor(Math.random() * flameTops.length)];
+      sparks.push({ x: k.c * PCW + PCW / 2, y: k.r * PCH, vx: rand(-5, 5), vy: rand(-34, -18), age: 0, life: rand(.8, 1.6) });
+    }
+    for (const s of sparks) { s.age += dt; s.x += s.vx * dt; s.y += s.vy * dt; }
+    sparks = sparks.filter(s => s.age < s.life);
+    if (morph && pt - morph.start > 1.4) morph = null;
+  }
+  function box(x, y) { pctx.fillRect(x - PCW / 2 + .5, y - PCH / 2 + .5, PCW - 1, PCH - 1); }
+  function drawPortrait() {
+    pctx.clearRect(0, 0, PW, PH);
+    pctx.font = `500 8.5px ${MONO}`;
+    pctx.textAlign = 'center'; pctx.textBaseline = 'middle';
+    const tick = Math.floor(pt * 3), blinking = pt > nextBlink && pt < nextBlink + .16;
+    const cur = grids[mode];
+    for (let i = 0; i < N; i++) {
+      let k = cur[i], scramble = false;
+      if (morph) {
+        const local = pt - morph.start - delays[i];
+        if (local < 0) k = morph.from[i];
+        else if (local < .14) { k = morph.to[i] || morph.from[i]; scramble = true; }
+        else k = morph.to[i];
+      }
+      if (!k) continue;
+      let x = k.c * PCW + PCW / 2, y = k.r * PCH + PCH / 2, ch = k.ch, d = k.d;
+      if (k.tail) x += Math.sin(pt * 1.3 - k.r * .11) * 9 * Math.pow((TAIL_BASE - k.r) / TAIL_BASE, 1.2);
+      if (ppointer) {
+        const dx = x - ppointer.x, dy = y - ppointer.y, dist = Math.hypot(dx, dy), R = 46;
+        if (dist < R && dist > 0) {
+          const f = 1 - dist / R;
+          x += dx / dist * f * 8; y += dy / dist * f * 8;
+          if (hash(k.c, k.r, tick) < f) ch = RAMP[Math.floor(hash(k.r, k.c, tick) * RAMP.length)];
+        }
+      }
+      if (scramble) { pctx.globalAlpha = .9; pctx.fillStyle = C.accent; pctx.fillText(RAMP[Math.floor(Math.random() * RAMP.length)], x, y + .5); continue; }
+      if (k.cl === 'e') {
+        if (blinking) { pctx.globalAlpha = .9; pctx.fillStyle = C.fg; pctx.fillText('-', x, y); continue; }
+        pctx.globalAlpha = .95; pctx.fillStyle = C.eye; box(x, y);
+        continue;
+      }
+      if (k.cl === 'r' || k.cl === 'g') {
+        let v = d;
+        if (k.flame) {
+          const n = Math.sin(k.c * .55 + pt * 2.1) + Math.sin(k.r * .8 + pt * 6) + Math.sin((k.c + k.r) * .3 - pt * 3.3);
+          v = Math.min(1, ((n + 3) / 6) * .65 + d * .45);
+          ch = FLAME[Math.min(FLAME.length - 1, Math.floor(v * FLAME.length))];
+        } else if (k.cl === 'g') {
+          v = .45 + .55 * Math.pow(Math.max(0, Math.sin(k.r * .22 + k.c * .04 - pt * 2.2)), 6);
+          ch = v > .7 ? '#' : (v > .55 ? '*' : '+');
+        }
+        pctx.globalAlpha = .14 + v * .5; pctx.fillStyle = C.accent; box(x, y);
+        pctx.globalAlpha = .55 + v * .45; pctx.fillStyle = C.accentInk;
+        pctx.fillText(ch, x, y + .5);
+        continue;
+      }
+      if (hash(k.c, k.r, tick) < .015) {
+        const idx = RAMP.indexOf(ch);
+        if (idx > 0) ch = RAMP[Math.min(RAMP.length - 1, idx + (hash(k.r, k.c, tick) < .5 ? -1 : 1))];
+      }
+      if (d > .3) { pctx.globalAlpha = (d - .3) * .26; pctx.fillStyle = C.fg; box(x, y); }
+      pctx.globalAlpha = .34 + d * .66; pctx.fillStyle = C.fg;
+      pctx.fillText(ch, x, y + .5);
+    }
+    pctx.fillStyle = C.accent;
+    for (const s of sparks) { pctx.globalAlpha = (1 - s.age / s.life) * .9; pctx.fillText(s.age < s.life * .4 ? "'" : '.', s.x, s.y); }
+    pctx.globalAlpha = 1;
+  }
+
+  // =================================================================
+  //  Schalter: Tropfen mit Federn, die sich beim Gleiten dehnen
+  // =================================================================
+  const sw = document.getElementById('sw');
+  const blobs = [
+    { el: document.getElementById('k1'), x: 16, v: 0, k: 300, c: 20 },
+    { el: document.getElementById('k2'), x: 16, v: 0, k: 130, c: 15 },
+    { el: document.getElementById('k3'), x: 16, v: 0, k: 70, c: 11 },
+  ];
+  let swTarget = 16, swRaf = 0, swLast = 0;
+  function swStep(now) {
+    const dt = Math.min(.032, (now - (swLast || now)) / 1000 || .016); swLast = now;
+    let moving = false;
+    for (const b of blobs) {
+      const a = -b.k * (b.x - swTarget) - b.c * b.v;
+      b.v += a * dt; b.x += b.v * dt;
+      if (Math.abs(b.x - swTarget) > .05 || Math.abs(b.v) > .05) moving = true;
+      b.el.setAttribute('cx', b.x.toFixed(2));
+    }
+    const lead = blobs[0], stretch = Math.min(.25, Math.abs(lead.v) / 900);
+    lead.el.setAttribute('r', (9.5 * (1 - stretch * .5)).toFixed(2));
+    swRaf = moving ? requestAnimationFrame(swStep) : 0;
+    if (!moving) { swLast = 0; for (const b of blobs) { b.x = swTarget; b.v = 0; b.el.setAttribute('cx', swTarget); } lead.el.setAttribute('r', 9.5); }
+  }
+  function moveSwitch(animate) {
+    swTarget = mode === 'sk0rp' ? 48 : 16;
+    if (!animate) { for (const b of blobs) { b.x = swTarget; b.v = 0; b.el.setAttribute('cx', swTarget); } return; }
+    if (!swRaf) swRaf = requestAnimationFrame(swStep);
+  }
+
+  // =================================================================
+  //  Textwirbel: Zeichen mischen sich kurz, bevor der Text steht
+  // =================================================================
+  const GLYPHS = 'Sk0rp#%@x*/+=';
+  function scramble(el, text, dur = 600) {
+    if (reduce) { el.textContent = text; return; }
+    cancelAnimationFrame(el._sr || 0);
+    const t0 = performance.now();
+    const step = now => {
+      const p = Math.min(1, (now - t0) / dur);
+      let s = '';
+      for (let i = 0; i < text.length; i++) s += text[i] === ' ' ? ' ' : (p * text.length > i + .3 ? text[i] : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]);
+      el.textContent = s;
+      if (p < 1) el._sr = requestAnimationFrame(step);
+    };
+    el._sr = requestAnimationFrame(step);
+  }
+  document.addEventListener('pointerenter', e => {
+    const el = e.target.closest && e.target.closest('[data-scramble]');
+    if (el && e.target === el) scramble(el, el.textContent, 420);
+  }, true);
+
+  // =================================================================
+  //  Wechsel zwischen Matteo und Sk0rp
+  // =================================================================
+  let mode = location.hash === '#sk0rp' ? 'sk0rp' : 'matteo';
+  const nameEl = document.getElementById('name'), midEl = document.getElementById('n-mid');
+  let swapTimer = 0;
+  function showSides(animate) {
+    clearTimeout(swapTimer);
+    const apply = () => {
+      document.querySelectorAll('[data-side]').forEach(el => {
+        const on = el.dataset.side === mode;
+        if (on && el.hidden) { el.classList.add('fade'); el.hidden = false; }
+        else if (!on) { el.hidden = true; el.classList.remove('fade'); }
+      });
+      void document.body.offsetWidth;
+      document.querySelectorAll(`[data-side="${mode}"].fade`).forEach(el => el.classList.remove('fade'));
+      if (mode === 'sk0rp') onSk0rpShown();
+    };
+    if (!animate) { apply(); return; }
+    document.querySelectorAll('[data-side]').forEach(el => { if (el.dataset.side !== mode && !el.hidden) el.classList.add('fade'); });
+    swapTimer = setTimeout(apply, 280);
+  }
+  function setMode(next, animate = true) {
+    if (next === mode && animate) return;
+    const prev = mode;
+    mode = next;
+    root.dataset.mode = mode;
+    sw.setAttribute('aria-checked', String(mode === 'sk0rp'));
+    document.querySelectorAll('.sw-name').forEach(b => b.classList.toggle('on', b.dataset.go === mode));
+    document.title = mode === 'sk0rp' ? 'Sk0rp' : 'Matteo Palermo';
+    nameEl.setAttribute('aria-label', mode === 'sk0rp' ? 'Sk0rp' : 'Matteo Palermo');
+    pc.setAttribute('aria-label', mode === 'matteo' ? L().pm : L().ps);
+    try { history.replaceState(null, '', '#' + mode); } catch {}
+    const anim = animate && !reduce;
+    moveSwitch(anim);
+    showSides(anim);
+    mixTarget = mode === 'sk0rp' ? 1 : 0;
+    if (anim && mode === 'sk0rp') scramble(midEl, 'Sk0rp', 800);
+    if (anim && raf) { morph = { from: grids[prev], to: grids[mode], start: pt }; sparks = []; }
+    else { mix = mixTarget; morph = null; computeColors(); requestAnimationFrame(() => { if (!raf) drawAll(); }); }
+    if (anim && scrollY > 40) scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  sw.addEventListener('click', () => setMode(mode === 'sk0rp' ? 'matteo' : 'sk0rp'));
+  document.querySelectorAll('.sw-name').forEach(b => b.addEventListener('click', () => setMode(b.dataset.go)));
+  addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h === 'sk0rp' || h === 'matteo') setMode(h); });
+
+  // =================================================================
+  //  Onchain: Score, Stufen, Kennzahlen
+  // =================================================================
+  // Score-Ring in den Ethos-Farben: 10 Bogenstücke (eine pro Stufe), gefüllt bis zum aktuellen Score
+  const LCOL = ['#B72B38', '#C29010', '#C1C0B6', '#7C8DA8', '#4E86B9', '#2E7BC3', '#427B56', '#127F31', '#836DA6', '#7A5EAF'];
+  const gInfo = document.getElementById('gauge-info'), ring = document.getElementById('ring');
+  const numEl = document.getElementById('score-num'), lvlEl = document.getElementById('level-name');
+  const RC = 150, RR = 118, A0 = -135, SWEEP = 270, GAP = .9;
+  const ang = v => A0 + SWEEP * Math.min(2800, Math.max(0, v)) / 2800;
+  const pol = (a, r) => [RC + r * Math.sin(a * Math.PI / 180), RC - r * Math.cos(a * Math.PI / 180)];
+  const arcD = (a1, a2, r) => { const [x1, y1] = pol(a1, r), [x2, y2] = pol(a2, r); return `M${x1.toFixed(2)} ${y1.toFixed(2)} A${r} ${r} 0 ${a2 - a1 > 180 ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`; };
+  const RING_MS = 1600;                       // so lange wie die Übergänge nach dem Schalter
+  const easeOut = t => 1 - Math.pow(1 - t, 4); // schnell los, sanft auslaufen
+  let ringSegs = [], ringDot = null, ringHalo = null, ringAnim = null;
+  function renderGaugeInfo() { gInfo.innerHTML = ''; }
+  function setRing(v) {
+    const lv = levelOf(Math.max(0, v));
+    ringSegs.forEach(sg => {
+      if (v <= sg.lo) { sg.fill.setAttribute('d', ''); return; }
+      sg.fill.setAttribute('d', arcD(sg.a1, Math.max(sg.a1 + .3, Math.min(sg.a2, ang(v))), RR));
+    });
+    const [dx, dy] = pol(ang(v), RR);
+    for (const c of [ringDot, ringHalo]) { c.setAttribute('cx', dx); c.setAttribute('cy', dy); c.style.fill = LCOL[lv]; }
+    numEl.textContent = String(Math.round(v));
+    lvlEl.textContent = LEVELS[lv][0];
+    lvlEl.style.color = LCOL[lv];
+  }
+  // Startet beim Einblenden der Sk0rp-Seite und endet zusammen mit den übrigen Übergängen.
+  // Läuft über die Uhrzeit, nicht über Einzelbilder; ein Timer setzt am Ende sicher den echten Wert.
+  let ringTimer = 0;
+  function animateRing() {
+    const start = performance.now();
+    ringAnim = start;
+    clearTimeout(ringTimer);
+    const done = () => { if (ringAnim === start) { ringAnim = null; setRing(ETHOS.score); } };
+    const step = now => {
+      if (ringAnim !== start) return;
+      const t = Math.min(1, (now - start) / RING_MS);
+      if (t >= 1) return done();
+      setRing(ETHOS.score * easeOut(t));
+      requestAnimationFrame(step);
+    };
+    setRing(0);
+    requestAnimationFrame(step);
+    ringTimer = setTimeout(done, RING_MS + 150);
+  }
+  function renderGauge(animate) {
+    const NS = 'http://www.w3.org/2000/svg', el = (n, at) => { const e = document.createElementNS(NS, n); for (const k in at) e.setAttribute(k, at[k]); return e; };
+    const score = ETHOS.score, cur = levelOf(score);
+    ring.innerHTML = '';
+    ring.append(el('path', { class: 'rs-inner', d: arcD(A0, A0 + SWEEP, RR - 22) }));
+    for (let v = 0; v <= 2800; v += 100) {
+      const big = LEVELS.some(l => l[1] === v) || v === 2800, a = ang(v), [x1, y1] = pol(a, RR + 12), [x2, y2] = pol(a, RR + (big ? 20 : 16));
+      ring.append(el('line', { class: 'rs-tick' + (big ? ' big' : ''), x1, y1, x2, y2 }));
+    }
+    const [lx0, ly0] = pol(A0, RR + 32), [lx1, ly1] = pol(A0 + SWEEP, RR + 32);
+    const t0 = el('text', { class: 'rs-lab', x: lx0, y: ly0 + 4, 'text-anchor': 'middle' }); t0.textContent = '0';
+    const t1 = el('text', { class: 'rs-lab', x: lx1, y: ly1 + 4, 'text-anchor': 'middle' }); t1.textContent = '2800';
+    ring.append(t0, t1);
+    ringSegs = LEVELS.map((l, i) => {
+      const a1 = ang(l[1]) + GAP, a2 = ang(l[2] + 1) - GAP;
+      const bg = el('path', { class: 'rs-bg', d: arcD(a1, a2, RR), tabindex: 0, role: 'img', 'aria-label': `${l[0]} ${l[1]}–${l[2]}` });
+      bg.style.stroke = LCOL[i];
+      const fill = el('path', { class: 'rs-fill', d: '' });
+      fill.style.stroke = LCOL[i];
+      ring.append(bg, fill);
+      const on = () => { bg.classList.add('hl'); fill.classList.add('hl'); gInfo.innerHTML = L().lvl(l[0], i + 1, fmt(l[1]), fmt(l[2])); };
+      const off = () => { bg.classList.remove('hl'); fill.classList.remove('hl'); renderGaugeInfo(); };
+      bg.addEventListener('pointerenter', on); bg.addEventListener('focus', on);
+      bg.addEventListener('pointerleave', off); bg.addEventListener('blur', off);
+      return { a1, a2, lo: l[1], fill };
+    });
+    ringHalo = el('circle', { class: 'rs-halo', r: 9 }); ringDot = el('circle', { class: 'rs-dot', r: 7 });
+    ring.append(ringHalo, ringDot);
+    ring.setAttribute('aria-label', L().ring(score, LEVELS[cur][0]));
+    if (animate && !reduce) animateRing();
+    else if (!ringAnim) setRing(score);
+    document.getElementById('lvl-big').textContent = LEVELS[cur][0];
+    document.getElementById('lvl-of').textContent = L().lvlOf(cur + 1);
+    // Veränderung der letzten 30 Tage und Abstand zur nächsten Stufe
+    const last = HISTORY[HISTORY.length - 1];
+    const cut = new Date(new Date(last.d + 'T12:00:00Z').getTime() - 30 * 864e5).toISOString().slice(0, 10);
+    const base = HISTORY.find(p => p.d >= cut) || HISTORY[0];
+    const diff = score - base.v, dEl = document.getElementById('delta');
+    dEl.textContent = (diff > 0 ? '+' : '') + fmt(diff);
+    dEl.className = 'ms-n ' + (diff > 0 ? 'up' : diff < 0 ? 'down' : '');
+    document.getElementById('delta-l').textContent = L().d30;
+    const nx = LEVELS[cur + 1];
+    document.getElementById('next-pts').textContent = nx ? fmt(nx[1] - score) : '';
+    document.getElementById('next-l').textContent = nx ? L().toNext(nx[0]) : L().top;
+    renderGaugeInfo();
+  }
+  let counted = false;
+  function countUp(el, to, f = v => fmt(Math.round(v))) {
+    if (reduce) { el.textContent = f(to); return; }
+    const t0 = performance.now(), dur = 1400;
+    const step = now => { const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); el.textContent = f(to * e); if (p < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  function renderStats(animate) {
+    const r = ETHOS.reviews, total = r.positive + r.negative + r.neutral, pct = total ? r.positive / total : 0;
+    const usd = ETHOS.vouchedUsd || ETHOS.whuf * ETHOS.whufPrice;   // einmal täglich vom Workflow berechnet
+    const money = v => '$' + fmt(Math.round(v / 1000)) + 'k';
+    document.getElementById('st-pos-l').textContent = L().pos;
+    document.getElementById('st-pos-pct').textContent = L().pct(fmt(pct, { style: 'percent', maximumFractionDigits: 1 }));
+    document.getElementById('st-usd-l').textContent = L().usdL;
+    document.getElementById('st-vouchers-l').textContent = L().vouchers;
+    document.getElementById('st-human').textContent = ETHOS.verified ? L().human : '';
+    const src = document.getElementById('source');
+    src.classList.toggle('live', isLive);
+    document.getElementById('source-t').textContent = dataDate ? L().upd(fmtDate(dataDate.slice(0, 10), { day: 'numeric', month: 'long', year: 'numeric' })) : isLive ? L().live : L().snap(fmtDate('2026-10-25', { day: 'numeric', month: 'long', year: 'numeric' }));
+    if (animate) {
+      countUp(document.getElementById('st-pos'), r.positive);
+      countUp(document.getElementById('st-usd'), usd, money);
+      countUp(document.getElementById('st-vouchers'), ETHOS.vouchers);
+      setTimeout(() => { document.getElementById('st-pos-bar').style.width = (pct * 100).toFixed(1) + '%'; }, 60);
+    } else {
+      document.getElementById('st-pos').textContent = fmt(r.positive);
+      document.getElementById('st-usd').textContent = money(usd);
+      document.getElementById('st-vouchers').textContent = fmt(ETHOS.vouchers);
+      document.getElementById('st-pos-bar').style.width = (pct * 100).toFixed(1) + '%';
+    }
+  }
+
+  // =================================================================
+  //  Reviews: Kartenstapel zum Durchblättern und Wegziehen
+  // =================================================================
+  const deck = document.getElementById('deck');
+  let rIndex = 0, autoTimer = 0;
+  function renderDeck() {
+    deck.innerHTML = '';
+    const n = REVIEWS.length;
+    for (let k = 3; k >= 0; k--) {
+      const r = REVIEWS[(rIndex + k) % n];
+      const c = document.createElement('article');
+      c.className = 'rcard';
+      c.style.transform = `translateY(${k * 10}px) scale(${1 - k * .04})`;
+      c.style.opacity = k === 3 ? 0 : String(1 - k * .25);
+      c.style.zIndex = String(10 - k);
+      c.innerHTML = `<div class="rtop"><a class="rt" target="_blank" rel="noopener"></a><p class="rx"></p></div><div class="ra"><span class="who"><span class="av"></span><span><span class="nmrow"><a class="nm" rel="noopener"></a><span class="sc"></span></span><span class="pos"></span></span></span><a class="rd" target="_blank" rel="noopener"></a></div>`;
+      const rt = c.querySelector('.rt'); rt.textContent = `“${r.t}”`; rt.href = r.l;
+      c.querySelector('.rx').textContent = r.x || '';
+      const nm = c.querySelector('.nm'); nm.textContent = r.n; nm.href = 'https://app.ethos.network/profile/x/' + encodeURIComponent(r.u);
+      c.querySelector('.pos').textContent = (r.k === 'vouch' ? L().vouched(r.w) : L().review) + (r.ts ? ' · ' + fmtDate(new Date(r.ts * 1000).toISOString().slice(0, 10)) : '');
+      const sc = c.querySelector('.sc');
+      if (r.s) { sc.textContent = r.s; sc.style.color = LCOL[levelOf(r.s)]; sc.title = LEVELS[levelOf(r.s)][0]; } else sc.remove();
+      const rd = c.querySelector('.rd'); rd.textContent = L().read; rd.href = r.l;
+      const av = c.querySelector('.av'); av.textContent = (r.n || '?').trim().charAt(0).toUpperCase();
+      // Profilbild: zuerst die lokale Kopie, sonst das Original bei X, sonst bleibt der Anfangsbuchstabe
+      const srcs = [r.a, r.ar].filter(Boolean);
+      const tryImg = k => { if (k >= srcs.length) return; const img = new Image(); img.alt = ''; img.referrerPolicy = 'no-referrer'; img.onload = () => { av.textContent = ''; av.appendChild(img); }; img.onerror = () => tryImg(k + 1); img.src = srcs[k]; };
+      tryImg(0);
+      if (k === 0) { c.dataset.top = '1'; c.setAttribute('data-tilt', ''); }
+      deck.appendChild(c);
+    }
+    document.getElementById('deck-count').textContent = `${rIndex + 1} ${L().of} ${n}`;
+    fitDeck();
+  }
+  // Höhe des Stapels so wählen, dass auch das längste Review ganz hineinpasst
+  function fitDeck() {
+    const top = deck.querySelector('[data-top]');
+    if (!top || deck.offsetParent === null) return;
+    const w = deck.clientWidth + ':' + lang;
+    if (deck._w === w) return;
+    const probe = top.cloneNode(true);
+    probe.removeAttribute('data-top');
+    probe.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:auto;visibility:hidden;transform:none';
+    deck.appendChild(probe);
+    let max = 0;
+    REVIEWS.forEach(r => {
+      probe.querySelector('.rt').textContent = `“${r.t}”`;
+      probe.querySelector('.rx').textContent = r.x || '';
+      max = Math.max(max, probe.offsetHeight);
+    });
+    probe.remove();
+    deck.style.height = Math.ceil(max + 20) + 'px';
+    deck._w = w;
+  }
+  addEventListener('resize', () => { deck._w = null; fitDeck(); });
+  function advance(dir = 1, fling) {
+    const top = deck.querySelector('[data-top]');
+    if (top && !reduce) {
+      top.style.transition = 'transform .45s cubic-bezier(.7,0,.2,1), opacity .35s ease';
+      top.style.transform = fling || `translateX(${dir * 115}%) rotate(${dir * 9}deg)`;
+      top.style.opacity = '0';
+      setTimeout(() => { rIndex = (rIndex + dir + REVIEWS.length) % REVIEWS.length; renderDeck(); }, 260);
+    } else { rIndex = (rIndex + dir + REVIEWS.length) % REVIEWS.length; renderDeck(); }
+    restartAuto();
+  }
+  function restartAuto() { clearInterval(autoTimer); if (!reduce) autoTimer = setInterval(() => { if (mode === 'sk0rp' && !deck.matches(':hover') && !document.hidden) advance(1); }, 6500); }
+  document.getElementById('next').addEventListener('click', () => advance(1));
+  document.getElementById('prev').addEventListener('click', () => advance(-1));
+  // Ziehen
+  let drag = null;
+  deck.addEventListener('pointerdown', e => {
+    const top = e.target.closest('[data-top]');
+    if (!top || e.target.closest('a')) return;
+    drag = { el: top, x0: e.clientX, y0: e.clientY, dx: 0 };
+    top.classList.add('dragging'); top.setPointerCapture(e.pointerId);
+  });
+  deck.addEventListener('pointermove', e => {
+    if (!drag) return;
+    drag.dx = e.clientX - drag.x0;
+    drag.el.style.transform = `translateX(${drag.dx}px) rotate(${drag.dx / 22}deg)`;
+  });
+  const endDrag = () => {
+    if (!drag) return;
+    const { el, dx } = drag; drag = null; el.classList.remove('dragging');
+    if (Math.abs(dx) > 90) advance(dx > 0 ? 1 : -1, `translateX(${Math.sign(dx) * 120}%) rotate(${Math.sign(dx) * 12}deg)`);
+    else { el.style.transform = ''; }
+  };
+  deck.addEventListener('pointerup', endDrag); deck.addEventListener('pointercancel', endDrag);
+
+  // =================================================================
+  //  Onchain-Reise: Score-Verlauf mit Meilensteinen
+  // =================================================================
+  const chart = document.getElementById('chart'), tip = document.getElementById('tip');
+  const CX0 = 8, CX1 = 560, CY0 = 18, CY1 = 210, SMIN = 1200, SMAX = 2400;
+  const xs = i => CX0 + (CX1 - CX0) * i / (HISTORY.length - 1);
+  const ys = v => CY1 - (CY1 - CY0) * (Math.min(SMAX, Math.max(SMIN, v)) - SMIN) / (SMAX - SMIN);
+  function renderChart() {
+    const NS = 'http://www.w3.org/2000/svg';
+    const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+    chart.innerHTML = '';
+    const defs = el('defs', {});
+    // Farbverlauf mit harten Kanten an den Stufengrenzen: Linie und Fläche wechseln die Farbe genau dort
+    const tierGrad = (id, op) => {
+      const g = el('linearGradient', { id, gradientUnits: 'userSpaceOnUse', x1: 0, y1: ys(SMIN), x2: 0, y2: ys(SMAX) });
+      LEVELS.forEach((l, i) => {
+        const lo = Math.max(l[1], SMIN), hi = Math.min(l[2] + 1, SMAX);
+        if (hi <= lo) return;
+        const o1 = (lo - SMIN) / (SMAX - SMIN), o2 = (hi - SMIN) / (SMAX - SMIN);
+        g.append(el('stop', { offset: o1, 'stop-color': LCOL[i], 'stop-opacity': op }), el('stop', { offset: o2, 'stop-color': LCOL[i], 'stop-opacity': op }));
+      });
+      return g;
+    };
+    const fade = el('linearGradient', { id: 'fade', x1: 0, y1: 0, x2: 0, y2: 1 });
+    fade.append(el('stop', { offset: 0, 'stop-color': '#fff', 'stop-opacity': 1 }), el('stop', { offset: 1, 'stop-color': '#fff', 'stop-opacity': .15 }));
+    const mask = el('mask', { id: 'areamask' });
+    defs.append(tierGrad('tierline', 1), tierGrad('tierarea', .28), fade, mask);
+    chart.append(defs);
+    LEVELS.forEach((l, i) => {
+      const lo = Math.max(l[1], SMIN), hi = Math.min(l[2] + 1, SMAX);
+      if (hi <= lo) return;
+      chart.append(el('rect', { class: 'tier', x: CX0, width: CX1 - CX0, y: ys(hi), height: ys(lo) - ys(hi), fill: LCOL[i] }));
+      if (l[1] > SMIN) chart.append(el('line', { class: 'band', x1: CX0, x2: CX1, y1: ys(l[1]), y2: ys(l[1]) }));
+      const tx = el('text', { class: 'band-l', x: CX1 + 8, y: (ys(lo) + ys(hi)) / 2 + 3, fill: LCOL[i] });
+      tx.textContent = l[0]; chart.append(tx);
+    });
+    ['2025-01', '2025-07', '2026-01', '2026-07'].forEach(m => {
+      const i = HISTORY.findIndex(p => p.d.startsWith(m));
+      if (i < 0) return;
+      const tx = el('text', { class: 'axis-l', x: xs(i), y: CY1 + 18, 'text-anchor': i === 0 ? 'start' : 'middle' });
+      tx.textContent = fmtDate(HISTORY[i].d, { month: 'short', year: 'numeric' }); chart.append(tx);
+    });
+    const pts = HISTORY.map((p, i) => `${xs(i).toFixed(1)},${ys(p.v).toFixed(1)}`);
+    mask.append(el('rect', { x: 0, y: CY0, width: 640, height: CY1 - CY0, fill: 'url(#fade)' }));
+    chart.append(el('path', { d: `M${pts[0]} L${pts.join(' L')} L${xs(HISTORY.length - 1)},${CY1} L${CX0},${CY1} Z`, fill: 'url(#tierarea)', mask: 'url(#areamask)' }));
+    const line = el('path', { class: 'ln', d: `M${pts.join(' L')}` });
+    chart.append(line);
+    if (!reduce && mode === 'sk0rp') {
+      const len = line.getTotalLength ? line.getTotalLength() : 1200;
+      line.style.strokeDasharray = len; line.style.strokeDashoffset = len;
+      line.getBoundingClientRect();
+      line.style.transition = 'stroke-dashoffset 1.6s cubic-bezier(.7,0,.2,1)'; line.style.strokeDashoffset = '0';
+    }
+    const xh = el('line', { class: 'xh', x1: 0, x2: 0, y1: CY0, y2: CY1, opacity: 0 });
+    const xd = el('circle', { class: 'xd', r: 5, cx: 0, cy: 0, opacity: 0 });
+    chart.append(xh, xd);
+    chart._xh = xh; chart._xd = xd;
+  }
+  function showTip(i) {
+    const p = HISTORY[i], x = xs(i), y = ys(p.v);
+    chart._xh.setAttribute('x1', x); chart._xh.setAttribute('x2', x); chart._xh.setAttribute('opacity', .5);
+    chart._xd.setAttribute('cx', x); chart._xd.setAttribute('cy', y); chart._xd.setAttribute('opacity', 1);
+    const r = chart.getBoundingClientRect(), sx = r.width / 640;
+    tip.style.left = (x * sx) + 'px'; tip.style.top = (y * sx) + 'px';
+    tip.textContent = `${fmtDate(p.d)}: ${p.v}, ${LEVELS[levelOf(p.v)][0]}`;
+    tip.classList.add('on');
+  }
+  function hideTip() { tip.classList.remove('on'); chart._xh && chart._xh.setAttribute('opacity', 0); chart._xd && chart._xd.setAttribute('opacity', 0); }
+  chart.addEventListener('pointermove', e => {
+    const r = chart.getBoundingClientRect(), x = (e.clientX - r.left) * 640 / r.width;
+    const i = Math.max(0, Math.min(HISTORY.length - 1, Math.round((x - CX0) / (CX1 - CX0) * (HISTORY.length - 1))));
+    showTip(i);
+  });
+  chart.addEventListener('pointerleave', hideTip);
+
+
+  // =================================================================
+  //  Krypto-Reise: Linie füllt sich beim Scrollen, Bitcoin-Kurs daneben, Ticker mit Logo und Link
+  // =================================================================
+  // Bitcoin-Monatsschluss in USD (Kraken), JJMM:Preis
+  const BTC = '1712:15186,1801:8773,1802:11512,1803:7415,1804:9736,1805:7636,1806:6618,1807:7604,1808:7016,1809:6604,1810:5601,1811:3195,1812:3513,1901:3589,1902:3854,1903:5066,1904:7816,1905:8171,1906:11798,1907:11527,1908:10095,1909:8589,1910:8812,1911:7335,1912:8043,2001:9800,2002:8036,2003:7206,2004:10001,2005:9672,2006:9348,2007:11746,2008:10464,2009:10676,2010:14022,2011:19451,2012:32239,2101:33534,2102:50400,2103:59021,2104:56619,2105:36676,2106:33532,2107:41489,2108:47146,2109:57378,2110:64393,2111:46732,2112:43928,2201:42400,2202:37788,2203:40079,2204:28943,2205:28380,2206:19947,2207:23959,2208:21375,2209:19444,2210:18545,2211:17229,2212:16945,2301:22766,2302:21699,2303:27923,2304:28468,2305:27240,2306:29902,2307:29047,2308:25806,2309:27800,2310:34741,2311:39975,2312:44972,2401:43075,2402:62034,2403:69681,2404:58272,2405:67498,2406:62680,2407:58694,2408:60581,2409:62835,2410:88087,2411:100050,2412:94562,2501:97441,2502:83673,2503:83420,2504:104119,2505:110274,2506:115990,2507:116467,2508:112050,2509:123330,2510:103280,2511:90435,2512:93712,2601:62858,2602:67270,2603:68861,2604:81438,2605:61038,2606:63593,2607:64054,2608:81276,2609:84740,2610:80358'
+    .split(',').map(x => { const [k, v] = x.split(':'); return { m: (2000 + +k.slice(0, 2)) * 12 + (+k.slice(2) - 1), v: +v }; });
+  const BRANDS = {
+    kadena: { name: 'Kadena LLC', href: 'https://x.com/kadena_io', logo: '<img src="icons/coins/kda.webp" alt="" class="sq">' },
+    bsc: { name: 'BSC', href: 'https://www.bnbchain.org', logo: '<img src="icons/coins/bnb.webp" alt="">' },
+    base: { name: 'Base', href: 'https://base.org', logo: '<img src="icons/coins/base.svg" alt="">' },
+    ethos: { name: 'Ethos', href: 'https://app.ethos.network', logo: '<i class="tkm" style="--src: url(icons/ethos.png)"></i>' },
+  };
+  const TICKERS = { BTC: 'bitcoin', ETH: 'ethereum', LTC: 'litecoin', MCO: 'mco', CRO: 'cronos', BNB: 'bnb', KDA: 'kadena', BLAST: 'blast' };
+  const jwrap = document.getElementById('jwrap'), jsvg = document.getElementById('jsvg'), jlist = document.getElementById('journey');
+  const monthOf = d => +d.slice(0, 4) * 12 + (+d.slice(5, 7) - 1);
+  const btcAt = m => (BTC.find(p => p.m === m) || BTC[BTC.length - 1]).v;
+  const kfmt = v => v >= 1000 ? '$' + (v / 1000).toFixed(v >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k' : '$' + v;
+  let jRows = [], jFill = null, jClip = null, jH = 0;
+  function chipifyJourney() {
+    jlist.querySelectorAll('li > span').forEach(sp => {
+      sp.innerHTML = sp.innerHTML.replace(/\$(BTC|ETH|LTC|MCO|CRO|BNB|KDA|BLAST)\b/g, (_, t) =>
+        `<a class="tk" href="https://coinmarketcap.com/currencies/${TICKERS[t]}/" target="_blank" rel="noopener"><img src="icons/coins/${t.toLowerCase()}.webp" alt=""${t === 'KDA' ? ' class="sq"' : ''} onerror="this.remove()">$${t}</a>`)
+        .replace(/\[(kadena|bsc|base|ethos)\]/g, (_, k) => { const b = BRANDS[k]; return `<a class="tk" href="${b.href}" target="_blank" rel="noopener">${b.logo}${b.name}</a>`; });
+    });
+    jlist.querySelectorAll('li').forEach(li => {
+      const tm = li.querySelector('time'); let jp = li.querySelector('.jp');
+      if (!jp) { jp = document.createElement('span'); jp.className = 'jp'; tm.append(jp); }
+      jp.textContent = L().btcL(kfmt(btcAt(monthOf(tm.dataset.d))));
+    });
+  }
+  function layoutJourney() {
+    if (jwrap.offsetParent === null) return;
+    const NS = 'http://www.w3.org/2000/svg', el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+    const W = jsvg.getBoundingClientRect().width, top0 = jwrap.getBoundingClientRect().top;
+    jH = jwrap.getBoundingClientRect().height;
+    const lis = [...jlist.children];
+    jRows = lis.map(li => { const b = li.querySelector('b').getBoundingClientRect(); return { li, y: b.top - top0 + b.height / 2, m: monthOf(li.querySelector('time').dataset.d) }; });
+    const end = { y: jH - 6, m: BTC[BTC.length - 1].m };
+    const pts = [...jRows, end];
+    const yOf = m => { for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1]; if (m <= b.m) return a.y + (b.y - a.y) * (m - a.m) / Math.max(1, b.m - a.m); } return end.y; };
+    const lmin = Math.log(3000), lmax = Math.log(130000), X0 = 14, X1 = W - 2, SX = 6;
+    const xOf = v => X0 + (X1 - X0) * (Math.log(v) - lmin) / (lmax - lmin);
+    const series = BTC.filter(p => p.m >= jRows[0].m).map(p => [xOf(p.v), yOf(p.m)]);
+    const line = 'M' + series.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
+    jsvg.innerHTML = '';
+    const defs = el('defs', {}), cp = el('clipPath', { id: 'jclip' }); jClip = el('rect', { x: -20, y: 0, width: W + 40, height: 0 }); cp.append(jClip); defs.append(cp); jsvg.append(defs);
+    jsvg.append(el('path', { class: 'pr', d: line }));
+    const g = el('g', { 'clip-path': 'url(#jclip)' });
+    g.append(el('path', { class: 'pa', d: `${line} L${X0} ${series[series.length - 1][1].toFixed(1)} L${X0} ${series[0][1].toFixed(1)} Z` }), el('path', { class: 'prf', d: line }));
+    jsvg.append(g);
+    jsvg.append(el('line', { class: 'sp', x1: SX, x2: SX, y1: jRows[0].y, y2: end.y }));
+    jFill = el('line', { class: 'spf', x1: SX, x2: SX, y1: jRows[0].y, y2: jRows[0].y });
+    jsvg.append(jFill);
+    jRows.forEach(r => {
+      const px = xOf(btcAt(r.m));
+      r.l = el('line', { class: 'jl', x1: SX + 6, x2: px, y1: r.y, y2: r.y });
+      r.c = el('circle', { class: 'jc', cx: px, cy: r.y, r: 3 });
+      r.d = el('circle', { class: 'jd', cx: SX, cy: r.y, r: 5 });
+      jsvg.append(r.l, r.c, r.d);
+    });
+    jwrap.classList.toggle('anim', !reduce);
+    updateJourney();
+  }
+  function updateJourney() {
+    if (!jFill || jwrap.offsetParent === null) return;
+    const t = jwrap.getBoundingClientRect().top;
+    const f = reduce ? jH : Math.max(jRows[0].y, Math.min(jH - 6, innerHeight * .62 - t));
+    jFill.setAttribute('y2', f);
+    jClip.setAttribute('height', f);
+    jRows.forEach(r => { const on = f >= r.y - 2; r.li.classList.toggle('seen', on); r.d.classList.toggle('on', on); r.c.classList.toggle('on', on); r.l.classList.toggle('on', on); });
+  }
+  let jTick = 0;
+  addEventListener('scroll', () => { if (!jTick) jTick = requestAnimationFrame(() => { jTick = 0; updateJourney(); }); }, { passive: true });
+  addEventListener('resize', () => { if (mode === 'sk0rp') layoutJourney(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (mode === 'sk0rp') layoutJourney(); });
+
+  function renderOnchain(animate = false) { renderGauge(animate); renderStats(animate); renderDeck(); renderChart(); }
+  function onSk0rpShown() {
+    requestAnimationFrame(() => { layoutJourney(); fitDeck(); });
+    if (!counted) { counted = true; renderOnchain(true); }
+    else { renderChart(); if (!reduce) animateRing(); }
+  }
+
+  // =================================================================
+  //  Live-Daten (funktioniert nur, wenn Ethos und DexScreener Anfragen vom Browser zulassen)
+  // =================================================================
+  async function getJSON(url, ms = 6000) {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms);
+    try { const r = await fetch(url, { signal: ctl.signal }); if (!r.ok) throw new Error(r.status); return await r.json(); }
+    finally { clearTimeout(timer); }
+  }
+  function applyData(d) {
+    if (typeof d.score === 'number') ETHOS.score = d.score;
+    if (d.reviews) ETHOS.reviews = d.reviews;
+    if (d.vouchers) ETHOS.vouchers = d.vouchers;
+    if (d.whuf) ETHOS.whuf = d.whuf;
+    if (d.whufPrice) ETHOS.whufPrice = d.whufPrice;
+    if (d.vouchedUsd) ETHOS.vouchedUsd = d.vouchedUsd;
+    if (typeof d.verified === 'boolean') ETHOS.verified = d.verified;
+    if (Array.isArray(d.history) && d.history.length > 10) { HISTORY.length = 0; HISTORY.push(...d.history); }
+  }
+  async function loadLive() {
+    let ok = false;
+    // 1) Tagesdatei aus dem Repository, die ein GitHub-Workflow alle 24 Stunden erneuert
+    try {
+      const d = await getJSON('data/ethos.json?h=' + Math.floor(Date.now() / 36e5));
+      if (d && typeof d.score === 'number') { applyData(d); dataDate = d.updatedAt || null; isLive = true; renderOnchain(false); }
+    } catch {}
+    // 2) sonst direkt bei Ethos und DexScreener anfragen
+    try {
+      const u = await getJSON('https://api.ethos.network/api/v2/user/by/x/Sk0rpETH');
+      if (u && typeof u.score === 'number') {
+        ETHOS.score = u.score;
+        const rr = u.stats && u.stats.review && u.stats.review.received;
+        if (rr) ETHOS.reviews = { positive: rr.positive || 0, neutral: rr.neutral || 0, negative: rr.negative || 0 };
+        const vw = (u.stats && u.stats.vouchTotals || []).find(v => JSON.stringify(v).toLowerCase().includes('whuf'));
+        const raw = vw && (vw.balance?.received ?? vw.balanceReceived ?? vw.received?.balance);
+        const cnt = vw && (vw.count?.received ?? vw.countReceived ?? vw.received?.count);
+        if (raw && /^\d+$/.test(String(raw))) { const w = Number(BigInt(String(raw)) / 10n ** 14n) / 1e4; if (w > 0) ETHOS.whuf = w; }
+        if (Number.isInteger(cnt) && cnt > 0) ETHOS.vouchers = cnt;
+        ETHOS.verified = u.humanVerificationStatus === 'VERIFIED';
+        ok = true;
+      }
+    } catch {}
+    try {
+      const h = await getJSON('https://api.ethos.network/api/v2/score/history?userkey=' + encodeURIComponent(ETHOS.profile) + '&duration=all');
+      const arr = Array.isArray(h) ? h : (h.values || []);
+      const pts = arr.map(p => ({ d: String(p.date || p.createdAt || '').slice(0, 10), v: +p.score })).filter(p => p.d && p.v).sort((a, b) => a.d < b.d ? -1 : 1);
+      if (pts.length > 10) { HISTORY.length = 0; HISTORY.push(...pts); }
+    } catch {}
+    if (ok) { isLive = true; renderOnchain(false); }
+  }
+
+  // =================================================================
+  //  Visuelles Feedback: Wellen im Hintergrund, leichtes Kippen von Karten
+  // =================================================================
+  let lastFx = 0;
+  document.addEventListener('pointerover', e => {
+    const el = e.target.closest && e.target.closest('[data-fx]');
+    if (!el || el.contains(e.relatedTarget)) return;
+    const now = performance.now();
+    if (now - lastFx < 180) return;
+    lastFx = now;
+    ripples.push({ x: e.clientX, y: e.clientY, age: .2, k: .45 });
+  });
+  document.addEventListener('pointermove', e => {
+    const el = e.target.closest && e.target.closest('[data-tilt]');
+    if (!el || reduce || el.classList.contains('dragging')) return;
+    const r = el.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
+    el.style.transform = `perspective(700px) rotateX(${(-py * 5).toFixed(2)}deg) rotateY(${(px * 6).toFixed(2)}deg) translateY(-2px)`;
+  }, { passive: true });
+  document.addEventListener('pointerout', e => {
+    const el = e.target.closest && e.target.closest('[data-tilt]');
+    if (el && !el.contains(e.relatedTarget) && !el.dataset.top) el.style.transform = '';
+    if (el && el.dataset.top && !el.contains(e.relatedTarget) && !drag) el.style.transform = '';
+  });
+
+  // =================================================================
+  //  Katzen-Steckbriefe (Easter Egg). Namen und Texte hier anpassen.
+  // =================================================================
+  const CATS = {
+    dark: {
+      imgs: ['cats/hades-1.webp', 'cats/hades-2.webp'], name: 'Hades', born: [2025, 5],
+      en: { kicker: 'ᾍδης  /ˈheɪdiːz/', text: 'Named after Hades, the Greek god of the underworld. His name is often read as “the unseen one”.', facts: [['Character', 'Dumb, food-obsessed, cuddly, scatterbrained'], ['Fur', 'Black'], ['Eyes', 'Copper']], alt: ['Hades, the black cat, sitting and looking into the camera with copper eyes.', 'Hades lying on his back on the floor.'] },
+      de: { kicker: 'ᾍδης  /ˈheɪdiːz/', text: 'Benannt nach Hades, dem griechischen Gott der Unterwelt. Sein Name wird oft als „der Unsichtbare“ gedeutet.', facts: [['Charakter', 'Dumm, verfressen, kuschelig, verpeilt'], ['Fell', 'Schwarz'], ['Augen', 'Kupfer']], alt: ['Hades, der schwarze Kater, sitzt und schaut mit kupfernen Augen in die Kamera.', 'Hades liegt auf dem Rücken am Boden.'] },
+    },
+    light: {
+      imgs: ['cats/hera-1.webp', 'cats/hera-2.webp'], name: 'Hera', born: [2025, 5],
+      en: { kicker: 'Ἥρα  /ˈhɛrə, ˈhɪərə/', text: 'Named after Hera, queen of the gods in ancient Greek religion and goddess of marriage and family.', facts: [['Character', 'Curious, intelligent, playful, cuddly, petite'], ['Fur', 'Cream with dark points'], ['Eyes', 'Blue']], alt: ['Hera, the light cat with dark ears and mask, lying on a scratching board and looking up.', 'Hera stretched out asleep on a grey blanket.'] },
+      de: { kicker: 'Ἥρα  /ˈhɛrə, ˈhɪərə/', text: 'Benannt nach Hera, der Königin der Götter in der altgriechischen Religion und Göttin der Ehe und Familie.', facts: [['Charakter', 'Neugierig, intelligent, verspielt, kuschelig, zierlich'], ['Fell', 'Creme mit dunklen Abzeichen'], ['Augen', 'Blau']], alt: ['Hera, die helle Katze mit dunklen Ohren und Maske, liegt auf einem Kratzbrett und schaut hoch.', 'Hera schläft ausgestreckt auf einer grauen Decke.'] },
+    },
+  };
+  // Alter zählt automatisch hoch: im Geburtsmonat (Mai) kommt ein Jahr dazu
+  function catAge(born) {
+    const now = new Date();
+    let y = now.getFullYear() - born[0];
+    if (now.getMonth() + 1 < born[1]) y--;
+    y = Math.max(0, y);
+    return lang === 'de' ? `${y} ${y === 1 ? 'Jahr' : 'Jahre'}` : `${y} ${y === 1 ? 'year' : 'years'}`;
+  }
+  const catPop = document.getElementById('catpop');
+  let catOpen = null, catReturn = null, catPhoto = 0;
+  // Foto wechseln: bei jedem Klick hin und her, der helle Balken zeigt das aktuelle Foto
+  function showCatPhoto(id, idx, animate) {
+    const c = CATS[id], img = document.getElementById('cp-img');
+    catPhoto = idx;
+    img.src = c.imgs[idx];
+    img.alt = c[lang].alt[idx];
+    document.querySelectorAll('.cp-bars i').forEach((b, i) => b.classList.toggle('on', i === idx));
+    document.getElementById('cp-media').setAttribute('aria-label', lang === 'de' ? 'Anderes Foto zeigen' : 'Show the other photo');
+    if (animate) { img.classList.remove('pop'); void img.offsetWidth; img.classList.add('pop'); }
+  }
+  document.getElementById('cp-media').addEventListener('click', () => { if (catOpen) showCatPhoto(catOpen, (catPhoto + 1) % CATS[catOpen].imgs.length, true); });
+  function fillCat(id) {
+    const c = CATS[id], d = c[lang];
+    showCatPhoto(id, catPhoto, false);
+    c.imgs.forEach(src => { const i = new Image(); i.src = src; });
+    document.getElementById('cp-kicker').textContent = d.kicker;
+    const nameEl = document.getElementById('cp-name');
+    nameEl.textContent = c.name;
+    nameEl.classList.toggle('ph', c.name.startsWith('['));
+    document.getElementById('cp-text').textContent = d.text;
+    const dl = document.getElementById('cp-facts');
+    const facts = [[lang === 'de' ? 'Alter' : 'Age', catAge(c.born)], ...d.facts];
+    dl.replaceChildren(...facts.flatMap(([k, v]) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = v; if (v.startsWith('[')) dd.className = 'ph'; return [dt, dd]; }));
+    document.getElementById('cp-close').textContent = lang === 'de' ? 'Schliessen' : 'Close';
+    return nameEl;
+  }
+  function openCat(id) {
+    catOpen = id; catReturn = document.activeElement; catPhoto = 0;
+    const nameEl = fillCat(id);
+    catPop.hidden = false;
+    document.body.classList.remove('cat-hover');
+    for (const c of cats) c.hover = false;
+    scramble(nameEl, CATS[id].name, 500);
+    document.getElementById('cp-close').focus({ preventScroll: true });
+  }
+  function closeCat() {
+    if (!catOpen) return;
+    catOpen = null; catPop.hidden = true;
+    if (catReturn && catReturn.focus) catReturn.focus({ preventScroll: true });
+  }
+  catPop.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeCat(); });
+  catPop.addEventListener('keydown', e => { if (e.key === 'Escape') closeCat(); });
+
+  // =================================================================
+  //  Ablauf
+  // =================================================================
+  let raf = 0, last = 0, accT = 0, userPaused = false, started = false;
+  const motionBtn = document.getElementById('motion');
+  function drawAll() { computeColors(); drawLake(); drawPortrait(); }
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    if (!last) last = now;
+    accT += Math.min(.1, (now - last) / 1000); last = now;
+    if (accT < 1 / 30) return;
+    const dt = Math.min(accT, .066); accT = 0;
+    if (mix !== mixTarget) mix = mixTarget > mix ? Math.min(mixTarget, mix + dt / .7) : Math.max(mixTarget, mix - dt / .7);
+    computeColors();
+    updateLake(dt); updateGlow(dt); drawLake();
+    if (portraitVisible || morph) { updatePortrait(dt); drawPortrait(); }
+  }
+  function start() { if (raf) return; started = true; last = 0; raf = requestAnimationFrame(frame); motionBtn.textContent = L().pause; motionBtn.setAttribute('aria-pressed', 'false'); }
+  function stop() { cancelAnimationFrame(raf); raf = 0; motionBtn.textContent = L().play; motionBtn.setAttribute('aria-pressed', 'true'); }
+  motionBtn.addEventListener('click', () => {
+    if (raf) { userPaused = true; stop(); mix = mixTarget; morph = null; drawAll(); }
+    else { userPaused = false; start(); }
+  });
+
+  addEventListener('resize', () => { resize(); if (mode === 'sk0rp') hideTip(); });
+  addEventListener('scroll', () => { if (!raf) drawLake(); }, { passive: true });
+  addEventListener('pointermove', e => {
+    pointer = { x: e.clientX, y: e.clientY };
+    let any = false;
+    for (const c of cats) { c.hover = mode === 'matteo' && !catOpen && !e.target.closest('a, button, input, .deck, #chart, #portrait, header') && catHit(c, e.clientX, e.clientY); any = any || c.hover; }
+    document.body.classList.toggle('cat-hover', any);
+  }, { passive: true });
+  addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') { pointer = null; ppointer = null; } });
+  document.addEventListener('pointerleave', () => { pointer = null; });
+  addEventListener('pointerdown', e => {
+    if (e.target.closest('a, button, input, textarea, #portrait, header, .deck, #chart, .catpop')) return;
+    const hit = mode === 'matteo' && cats.find(c => catHit(c, e.clientX, e.clientY));
+    if (hit) { openCat(hit.id); return; }
+    ripples.push({ x: e.clientX, y: e.clientY, age: 0, k: 1 });
+  });
+  pc.addEventListener('pointermove', e => {
+    const r = pc.getBoundingClientRect();
+    ppointer = { x: (e.clientX - r.left) * PW / r.width, y: (e.clientY - r.top) * PH / r.height };
+    if (!raf) drawPortrait();
+  });
+  pc.addEventListener('pointerleave', () => { ppointer = null; if (!raf) drawPortrait(); });
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { portraitVisible = es[0].isIntersecting; }).observe(pc);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { if (raf) { cancelAnimationFrame(raf); raf = 0; } } else if (!userPaused && !reduce) start(); });
+  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+  const clockEl = document.getElementById('clock');
+  function tickClock() { try { clockEl.textContent = new Intl.DateTimeFormat('de-CH', { timeZone: 'Europe/Zurich', hour: '2-digit', minute: '2-digit' }).format(new Date()); } catch {} }
+  setInterval(tickClock, 20000);
+
+
+  // ETH-Pille: kopiert die Wallet-Adresse
+  const ethBtn = document.getElementById('copy-eth'), ethT = document.getElementById('copy-eth-t');
+  const ETH_ADDR = '0x12b6d12A6b5d23804c94ec1e40E0DF5e91BD0cc0';
+  ethBtn.addEventListener('click', async () => {
+    let ok = false;
+    try { await navigator.clipboard.writeText(ETH_ADDR); ok = true; }
+    catch { try { const ta = document.createElement('textarea'); ta.value = ETH_ADDR; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch {} }
+    ethT.textContent = ok ? L().ethCopied : ETH_ADDR.slice(0, 6) + '…' + ETH_ADDR.slice(-4);
+    ethBtn.classList.toggle('ok', ok);
+    clearTimeout(ethBtn._t);
+    ethBtn._t = setTimeout(() => { ethT.textContent = 'sk0rp.eth'; ethBtn.classList.remove('ok'); }, 2200);
+  });
+
+
+  // Schweizer Flagge: zeigt zwei Bilder von Luzern, ein Klick aufs Bild wechselt
+  const luPop = document.getElementById('lupop'), luImg = document.getElementById('lu-img'), luBars = luPop.querySelectorAll('.cp-bars i');
+  const LU = ['icons/luzern-1.webp', 'icons/luzern-2.webp'];
+  let luIdx = 0, luLast = null;
+  function showLu(i, anim) {
+    luIdx = i; luImg.src = LU[i];
+    luBars.forEach((b, k) => b.classList.toggle('on', k === i));
+    if (anim && !reduce) { luImg.classList.remove('pop'); void luImg.offsetWidth; luImg.classList.add('pop'); }
+  }
+  function openLu() { luLast = document.activeElement; showLu(0, false); luPop.hidden = false; new Image().src = LU[1]; document.getElementById('lu-media').focus(); }
+  function closeLu() { luPop.hidden = true; if (luLast) luLast.focus(); }
+  document.getElementById('ch-flag').addEventListener('click', openLu);
+  document.querySelectorAll('.lu-link').forEach(el => {
+    el.addEventListener('click', openLu);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLu(); } });
+  });
+  document.getElementById('lu-media').addEventListener('click', () => showLu((luIdx + 1) % LU.length, true));
+  luPop.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeLu));
+  luPop.addEventListener('keydown', e => { if (e.key === 'Escape') closeLu(); });
+
+  // Discord: Benutzername kopieren
+  const dcBtn = document.getElementById('copy-dc'), dcT = document.getElementById('copy-dc-t');
+  dcBtn.addEventListener('click', async () => {
+    let ok = false;
+    try { await navigator.clipboard.writeText('Sk0rp'); ok = true; }
+    catch { try { const ta = document.createElement('textarea'); ta.value = 'Sk0rp'; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch {} }
+    if (!ok) return;
+    dcT.textContent = L().copied;
+    clearTimeout(dcBtn._t);
+    dcBtn._t = setTimeout(() => { dcT.textContent = lang === 'de' ? DE.copy : 'Copy'; }, 1800);
+  });
+
+  // Start
+  setMode(mode, false);
+  setLang(lang);
+  resize();
+  restartAuto();
+  if (reduce) {
+    for (let i = 0; i < 90; i++) updateLake(1 / 30);
+    pt = 5; nextBlink = 99; started = true;
+    stop(); drawAll();
+  } else {
+    morph = { from: grids.none, to: grids[mode], start: 0 };
+    start();
+  }
+  if (document.fonts) document.fonts.ready.then(() => { if (!raf) drawAll(); });
+  loadLive();
+  setInterval(loadLive, 24 * 36e5);   // bleibt die Seite offen, alle 24 Stunden neu laden
+})();
+</script>
+</body>
+</html>
