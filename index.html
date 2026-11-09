@@ -127,6 +127,13 @@ header.top::before { content: ""; position: absolute; inset: 0 calc(50% - 50vw);
 .lang button { font: inherit; font-size: .9375rem; color: var(--muted); background: none; border: 0; padding: .2rem .35rem; cursor: pointer; border-radius: 4px; }
 .lang button[aria-pressed="true"] { color: var(--fg); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 5px; text-decoration-thickness: 2px; }
 .lang button:hover { color: var(--fg); }
+.tr { justify-self: end; display: flex; align-items: center; gap: .3rem; }
+.adm { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; color: var(--muted); opacity: .5; transition: opacity .25s ease, color .25s ease; }
+.adm:hover, .adm:focus-visible { opacity: 1; color: var(--fg); }
+.adm svg { width: 15px; height: 15px; }
+.fr { display: inline-flex; align-items: baseline; gap: 1.25rem; }
+.adm-f { display: none; text-decoration: none; }
+@media (max-width: 600px) { .adm { display: none; } .adm-f { display: inline; } }
 
 .switch {
   display: inline-flex; align-items: center; gap: .55rem; padding: .3rem .85rem;
@@ -491,9 +498,12 @@ footer p { margin: 0; max-width: 40rem; }
       </button>
       <button class="sw-name" type="button" data-go="sk0rp" tabindex="-1" aria-hidden="true">Sk0rp</button>
     </div>
-    <div class="lang" role="group" aria-label="Language" data-ta="lang_label">
-      <button type="button" data-lang="en" aria-pressed="true">EN</button>
-      <button type="button" data-lang="de" aria-pressed="false">DE</button>
+    <div class="tr">
+      <a class="adm" href="https://admin.sk0rp.dev" title="Admin" aria-label="Admin" rel="nofollow"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.8"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg></a>
+      <div class="lang" role="group" aria-label="Language" data-ta="lang_label">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="de" aria-pressed="false">DE</button>
+      </div>
     </div>
   </header>
 
@@ -668,7 +678,10 @@ footer p { margin: 0; max-width: 40rem; }
     <p>
       <span class="side" data-side="sk0rp" hidden data-t="s_foot">Flip the switch at the top to meet Matteo, the person behind Sk0rp.</span>
     </p>
-    <button class="textbtn" type="button" id="motion" aria-pressed="false">Pause motion</button>
+    <span class="fr">
+      <a class="textbtn adm-f" href="https://admin.sk0rp.dev" rel="nofollow">Admin</a>
+      <button class="textbtn" type="button" id="motion" aria-pressed="false">Pause motion</button>
+    </span>
   </footer>
 </div>
 
